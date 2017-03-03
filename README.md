@@ -11,14 +11,11 @@ You need the following libraries before installing librl:
 ## Installation
 librl is a header-only library. To make the classes available for your projects, simply download and install the package as follows:
 
-``bash
-
+```bash
 git clone https://github.com/xetqL/librl.git
-
 cd librl
-
 sudo make install
-``
+```
 
 If you have any questions, please ask: [anthony.boulmier@hesge.ch](mailto:anthony.boulmier@hesge.ch?subject="Questions about librl")
 
