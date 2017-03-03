@@ -8,8 +8,8 @@
 #ifndef GRIDWORLD_HPP
 #define GRIDWORLD_HPP
 
-#include <librl/RLAlgorithms.hpp>
-#include <librl/Policies.hpp>
+#include <librl/SarsaAgent.hpp>
+#include <librl/EGreedyPolicy.hpp>
 #include <librl/util.hpp>
 #include <librl/MDP.hpp>
 #include <librl/FunctionApproximator.hpp>
@@ -31,8 +31,6 @@
 #define HOLE     4
 #define STOP     5
 
-using namespace std;
-
 typedef std::vector<std::vector<int>> Maze;
 
 typedef std::pair<int, int> Position;
@@ -52,7 +50,7 @@ typedef int Move;
 Position locate_player(Maze m) {
     for (size_t i = 0; i < m.size(); i++) {
         for (size_t j = 0; j < m[i].size(); j++) {
-            if (m[i][j] == PLAYER) return make_pair<int, int>(i, j);
+            if (m[i][j] == PLAYER) return std::make_pair<int, int>(i, j);
         }
     }
     throw "No player on board !";
@@ -66,35 +64,35 @@ Position locate_player(Maze m) {
 Position locate(Maze m, int target_type) {
     for (size_t i = 0; i < m.size(); i++) {
         for (size_t j = 0; j < m[i].size(); j++) {
-            if (m[i][j] == target_type) return make_pair<int, int>(i, j);
+            if (m[i][j] == target_type) return std::make_pair<int, int>(i, j);
         }
     }
-    return make_pair<int, int>(-1, -1);
+    return std::make_pair<int, int>(-1, -1);
 }
 
 void print_maze(Maze m) {
-    cout << "--------------------" << endl;
+    std::cout << "--------------------" << std::endl;
     for (auto const &row : m) {
         for (auto const &cell : row) {
             switch (cell) {
             case PLAYER:
-                cout << '|' << 'P';
+                std::cout << '|' << 'P';
                 break;
             case EMPTY:
-                cout << '|' << ' ';
+                std::cout << '|' << ' ';
                 break;
             case OBSTACLE:
-                cout << '|' << '#';
+                std::cout << '|' << '#';
                 break;
             case HOLE:
-                cout << '|' << 'o';
+                std::cout << '|' << 'o';
                 break;
             case STOP:
-                cout << '|' << 'x';
+                std::cout << '|' << 'x';
                 break;
             }
         }
-        cout << endl << "--------------------" << endl;
+        std::cout << std::endl << "--------------------" << std::endl;
     }
 }
 

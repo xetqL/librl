@@ -15,7 +15,7 @@ CPPFLAGS=-Wall -std=$(STD)
 
 .PHONY: install
 install:
-	@cp -r include/librl/ /usr/local/include/librl/
+	@cp -rf include/librl/ /usr/local/include/
 
 examples: gridworld tictactoe
 

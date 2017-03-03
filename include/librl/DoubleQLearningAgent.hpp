@@ -7,7 +7,11 @@ template<typename TState, typename TAction>
 class DoubleQLearningAgent : public RLAgent<TState, TAction> {
 public:
 
-    DoubleQLearningAgent(std::vector<double> params, std::shared_ptr<Policy<TState, TAction>> pi, std::shared_ptr<MDP<TState, TAction>> mdp, DoubleApproximator<TState,TAction> dba)
+    DoubleQLearningAgent(
+            std::vector<double> params, 
+            std::shared_ptr<Policy<TState, TAction>> pi, 
+            std::shared_ptr<MDP<TState, TAction>> mdp, 
+            DoubleApproximator<TState,TAction> dba)
     : RLAgent<TState, TAction>(pi, mdp, dba) {
         this->gamma = params[1];
         this->alpha = params[0];

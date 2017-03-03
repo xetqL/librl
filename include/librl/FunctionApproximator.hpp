@@ -293,11 +293,14 @@ template<typename TState, typename TAction>
 class ArrayActionValueApproximator : public ActionValueApproximator<TState, TAction> {
 public:
 
-    ArrayActionValueApproximator(double _alpha, std::function< std::vector<TAction>(TState) > _available_actions) : ActionValueApproximator<TState, TAction>(_alpha), available_actions(_available_actions) {
-    };
+    ArrayActionValueApproximator(
+            double _alpha, 
+            std::function< std::vector<TAction>(TState) > _available_actions) 
+    : ActionValueApproximator<TState, TAction>(_alpha), available_actions(_available_actions) {};
 
-    ArrayActionValueApproximator(std::function< std::vector<TAction>(TState) > _available_actions) : ActionValueApproximator<TState, TAction>(0.1), available_actions(_available_actions) {
-    };
+    ArrayActionValueApproximator(
+            std::function< std::vector<TAction>(TState) > _available_actions) 
+    : ActionValueApproximator<TState, TAction>(0.1), available_actions(_available_actions) {};
 
     /**
      * Get argmax_a Q(s,a), it may contains several indices

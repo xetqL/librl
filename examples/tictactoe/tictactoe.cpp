@@ -1,4 +1,3 @@
-
 /* 
  * File:   tictactoe.cpp
  * Author: xetql

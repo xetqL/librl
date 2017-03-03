@@ -17,8 +17,6 @@ int main(int argc, char** argv) {
         {EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY},
         {EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY},
         {EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY},
-        {EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY},
-        {EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY, EMPTY},
         {PLAYER, HOLE, HOLE, HOLE, HOLE, HOLE, HOLE, STOP},
     };
 
@@ -29,14 +27,12 @@ int main(int argc, char** argv) {
 
     std::shared_ptr<ArrayActionValueApproximator<Maze, Move>> fa = make_shared<ArrayActionValueApproximator<Maze, Move >> (0.3, A);
 
-    std::shared_ptr<MDP<Maze, Move>> tictactoe_mdp = make_shared<MDP<Maze, Move >> (S, A, R, T, entry_state);
-
     std::shared_ptr<SarsaAgent<Maze, Move >> player(
             new SarsaAgent<Maze, Move>({0.3, 0.9}, policy_egreedy, maze_mdp, fa)
             );
-    const int START_SHOW = 9800;
-    const int RESTART_AFTER = 1000;
-    const int LEARNING_ITERATIONS = 10000;
+    const int START_SHOW = 1000;
+    const int RESTART_AFTER = 100000;
+    const int LEARNING_ITERATIONS = 1100;
     double r = 0.0;
     for (size_t i = 0; i < LEARNING_ITERATIONS; ++i) {
 

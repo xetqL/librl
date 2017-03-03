@@ -1,6 +1,8 @@
 #pragma once
+
 #include <vector>
 #include <iostream>
+#include <map>
 
 template<class T>
 void print2DArray(std::vector<std::vector<T>> array){
