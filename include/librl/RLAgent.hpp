@@ -36,7 +36,10 @@ public:
      * @param nbStates Number of state, one state is added as a starting state.
      * @param explTechnique Specifiy the function that selects the next Action following a given policy
      */
-    RLAgent(std::shared_ptr<Policy<TState, TAction>> pi, std::shared_ptr<MDP<TState, TAction>> mdp, std::shared_ptr<ActionValueApproximator<TState, TAction>> fa)
+    RLAgent(
+            std::shared_ptr<Policy<TState, TAction>> pi, 
+            std::shared_ptr<MDP<TState, TAction>> mdp, 
+            std::shared_ptr<ActionValueApproximator<TState, TAction>> fa)
     : q(fa), uuid(generate_random_uuid()), pi(pi), mdp(mdp) {
         //this->stats = std::make_shared<AgentStatistics>();
     }

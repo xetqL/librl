@@ -6,8 +6,13 @@
 template<typename TState, typename TAction>
 class SarsaAgent : public RLAgent<TState, TAction> {
 public:
-
-    SarsaAgent(std::vector<double> params, std::shared_ptr< Policy<TState, TAction> > pi, std::shared_ptr<MDP<TState, TAction>> mdp, std::shared_ptr<ActionValueApproximator<TState, TAction>> ava) : RLAgent<TState, TAction>(pi, mdp, ava) {
+    
+    SarsaAgent(
+            std::vector<double> params, 
+            std::shared_ptr< Policy<TState, TAction> > pi, 
+            std::shared_ptr<MDP<TState, TAction>> mdp, 
+            std::shared_ptr<ActionValueApproximator<TState, TAction>> ava) 
+    : RLAgent<TState, TAction>(pi, mdp, ava) {
         this->gamma = params[1];
         this->alpha = params[0];
     }

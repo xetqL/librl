@@ -20,15 +20,15 @@ int main(int argc, char** argv) {
         {PLAYER, HOLE, HOLE, HOLE, HOLE, HOLE, HOLE, STOP},
     };
 
-
+    
     std::shared_ptr<MDP<Maze, Move>> maze_mdp = make_shared<MDP<Maze, Move >> (S, A, R, T, entry_state);
     std::shared_ptr<Policy<Maze, Move>> policy_egreedy = dynamic_pointer_cast<Policy<Maze, Move >> (std::make_shared<EGreedyPolicy<Maze, Move >> (0.2));
-    std::shared_ptr<Policy<Maze, Move>> policy_greedy = dynamic_pointer_cast<Policy<Maze, Move >> (std::make_shared<GreedyPolicy<Maze, Move >> ());
+    std::shared_ptr<Policy<Maze, Move>> policy_greedy  = dynamic_pointer_cast<Policy<Maze, Move >> (std::make_shared<GreedyPolicy<Maze, Move >> ());
 
     std::shared_ptr<ArrayActionValueApproximator<Maze, Move>> fa = make_shared<ArrayActionValueApproximator<Maze, Move >> (0.3, A);
 
     std::shared_ptr<SarsaAgent<Maze, Move >> player(
-            new SarsaAgent<Maze, Move>({0.3, 0.9}, policy_egreedy, maze_mdp, fa)
+            new SarsaAgent<Maze, Move>({0.3, 0.9}, std::make_shared(new GreedyPolicy<Maze, Move>()), std::make_shared(new MDP<Maze, Move>(S,A,R,T, entry_state)), std::make_shared(new ArrayActionValueApproximator<Maze, Move>(0.3, A)))
             );
     const int START_SHOW = 1000;
     const int RESTART_AFTER = 100000;
