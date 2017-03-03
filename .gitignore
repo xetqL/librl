@@ -28,3 +28,6 @@
 *.out
 *.app
 bin/
+
+# Netbeans configuration
+nbproject/
