@@ -13,7 +13,9 @@ librl is a header-only library. To make the classes available for your projects,
 
 ``bash
 git clone https://github.com/xetqL/librl.git
+
 cd librl
+
 sudo make install
 ``
 
