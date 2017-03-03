@@ -1,33 +1,11 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /* 
  * File:   gridworld.cpp
  * Author: xetql
  *
  * Created on February 27, 2017, 11:10 AM
  */
-
-
-#include "librl/RLAlgorithms.hpp"
-#include "librl/Policies.hpp"
-#include "librl/util.hpp"
-#include "librl/MDP.hpp"
-#include "librl/FunctionApproximator.hpp"
 #include "gridworld.hpp"
 
-#include <algorithm>
-#include <cassert>
-#include <cmath>
-#include <chrono>
-#include <cstdlib>
-#include <iostream>
-#include <random>
-#include <thread>
-#include <vector>
 using namespace std;
 
 /*
@@ -58,7 +36,6 @@ int main(int argc, char** argv) {
             );
     const int START_SHOW = 9800;
     const int RESTART_AFTER = 1000;
-    const int TEST_BATCH = 10;
     const int LEARNING_ITERATIONS = 10000;
     double r = 0.0;
     for (size_t i = 0; i < LEARNING_ITERATIONS; ++i) {

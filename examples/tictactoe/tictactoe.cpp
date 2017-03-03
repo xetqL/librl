@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 
 /* 
  * File:   tictactoe.cpp
@@ -11,22 +6,7 @@
  * Created on February 27, 2017, 11:10 AM
  */
 
-#include "librl/RLAlgorithms.hpp"
-#include "librl/Policies.hpp"
-#include "librl/util.hpp"
-#include "librl/MDP.hpp"
-#include "librl/FunctionApproximator.hpp"
 #include "tictactoe.hpp"
-
-#include <algorithm>
-#include <cassert>
-#include <cmath>
-#include <chrono>
-#include <cstdlib>
-#include <iostream>
-#include <random>
-#include <thread>
-#include <vector>
 
 using namespace std;
 
@@ -52,7 +32,7 @@ int main(int argc, char** argv) {
             new QLearningAgent<tictactoe, Move>({0.3, 0.9}, policy_egreedy, tictactoe_mdp, faai)
             );
             
-    const int LEARNING_GAMES = atoi(argv[0]), START_SHOWING = 200010;
+    const int LEARNING_GAMES = atoi(argv[0]), START_SHOWING = LEARNING_GAMES - 10;
 
     bool show = false, finished, human_player = false;
 
@@ -73,7 +53,6 @@ int main(int argc, char** argv) {
             human_player = true;
         }
 
-        //AIturn = true;
         finished = false;
         while (!finished && !isfinal(tictactoe_mdp->current_state)) {
 
@@ -90,7 +69,6 @@ int main(int argc, char** argv) {
                 action = make_pair(move_index / 3, move_index % 3);
             }
 
-            //auto reward = tictactoe_mdp->get_reward(tictactoe_mdp->current_state, action);
             auto state = tictactoe_mdp->perform_state_transition(action);
 
             piece winner = iswin(state.second);

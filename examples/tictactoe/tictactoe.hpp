@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /* 
  * File:   tictactoe.hpp
  * Author: xetql
@@ -13,6 +7,12 @@
 
 #ifndef TICTACTOE_HPP
 #define TICTACTOE_HPP
+
+#include <librl/RLAlgorithms.hpp>
+#include <librl/Policies.hpp>
+#include <librl/util.hpp>
+#include <librl/MDP.hpp>
+#include <librl/FunctionApproximator.hpp>
 
 #include <algorithm>
 #include <cassert>

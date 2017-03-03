@@ -1,9 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 /* 
  * File:   gridworld.hpp
  * Author: xetql
@@ -14,16 +8,17 @@
 #ifndef GRIDWORLD_HPP
 #define GRIDWORLD_HPP
 
-#include "librl/RLAlgorithms.hpp"
-#include "librl/Policies.hpp"
-#include "librl/util.hpp"
-#include "librl/MDP.hpp"
-#include "librl/FunctionApproximator.hpp"
+#include <librl/RLAlgorithms.hpp>
+#include <librl/Policies.hpp>
+#include <librl/util.hpp>
+#include <librl/MDP.hpp>
+#include <librl/FunctionApproximator.hpp>
 
 #include <algorithm>
 #include <cassert>
 #include <cmath>
 #include <chrono>
+#include <cstdlib>
 #include <iostream>
 #include <random>
 #include <thread>
@@ -48,11 +43,6 @@ typedef int Move;
 #define RIGHT 1
 #define UP    2
 #define DOWN  3
-
-/*class ActionType{
-    virtual int to_int() = 0;
-    virtual ActionType from_int(int i) = 0;
-};*/
 
 /**
  * O(n*m) algorithm to locate player in a maze
@@ -173,7 +163,6 @@ Maze T(Maze maze, Move m) {
 }
 
 std::vector<Maze> S() {
-    // do I really want to do that  //
     Maze m = {
         {EMPTY, EMPTY, EMPTY, STOP},
         {EMPTY, EMPTY, EMPTY, EMPTY},
@@ -218,36 +207,11 @@ std::vector<Move> A(Maze maze) {
     return restricted_moves;
 }
 
-std::vector<int> Ad(std::vector<double> v) {
-    std::vector<int> i;
-    i.push_back(0);
-    i.push_back(1);
-    return i;
-}
-
 void clear() {
     // CSI[2J clears screen, CSI[H moves the cursor to top-left corner
     std::cout << "\x1B[2J\x1B[H";
 }
 
-//dynamic_pointer_cast<Policy<double>>(make_shared<UCB1Policy<double>>()),
-//dynamic_pointer_cast<Policy<double>>(make_shared<BoltzmannPolicy<double>>(1LEFT0000, 0.95)),
-//dynamic_pointer_cast<Policy<double>>(make_shared<UCB1Policy<double>>()),
-//dynamic_pointer_cast<Policy<double>>(make_shared<EGreedyPolicy<double>>(0.7)),
-
-std::vector<double> state_to_vect(Maze m) {
-    std::vector<double> v(m.size() * m[0].size());
-    for (size_t i = 0; i < m.size(); ++i)
-        for (size_t j = 0; j < m[0].size(); ++j) {
-
-            v[i * m[0].size() + j] = (double) m[i][j];
-        }
-    return v;
-}
-
-std::vector<double> it_is_a_vector(std::vector<double> state) {
-    return state;
-}
 
 #endif /* GRIDWORLD_HPP */
 

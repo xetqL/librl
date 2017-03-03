@@ -13,6 +13,10 @@ lFLAGS=-ldoublefann
 
 CPPFLAGS=-Wall -std=$(STD)
 
+.PHONY: install
+install:
+	@cp -r include/librl/ /usr/local/include/librl/
+
 examples: gridworld tictactoe
 
 gridworld: examples/gridworld/*.cpp
