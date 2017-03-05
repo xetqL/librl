@@ -11,6 +11,7 @@
 #include <functional>
 #include <numeric>
 #include <cassert>
+#include <memory>
 
 template<typename T>
 class Reward{
@@ -53,29 +54,6 @@ private:
 protected:
   double apply(T raw_values){
     return apply_func(raw_values);
-  }
-};
-
-class TheoreticalRobustnessReward: public Reward<double>{
-public:
-  TheoreticalRobustnessReward(){}
-  TheoreticalRobustnessReward(std::shared_ptr<RobustnessTracker> tracker){
-    this->tracker = tracker; 
-  }
-  void set_tracker(std::shared_ptr<RobustnessTracker> tracker){
-    this->tracker = tracker;
-  }
-private:
-  std::shared_ptr<RobustnessTracker> tracker;
- 
-  double apply(double raw_value){
-    tracker->set(this->action, raw_value);
-    DLSRobustness rdls = tracker->get(this->action);
-    if(rdls->radius > rdls->deadline) { //failure after global deadline
-      return -1.0;
-    } else { //success
-      return 1 - (rdls->radius - rdls->reference) / (rdls->deadline - rdls->reference);
-    }
   }
 };
 

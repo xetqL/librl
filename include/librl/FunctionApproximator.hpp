@@ -294,13 +294,15 @@ class ArrayActionValueApproximator : public ActionValueApproximator<TState, TAct
 public:
 
     ArrayActionValueApproximator(
-            double _alpha, 
-            std::function< std::vector<TAction>(TState) > _available_actions) 
-    : ActionValueApproximator<TState, TAction>(_alpha), available_actions(_available_actions) {};
+            double _alpha,
+            std::function< std::vector<TAction>(TState) > _available_actions)
+    : ActionValueApproximator<TState, TAction>(_alpha), available_actions(_available_actions) {
+    };
 
     ArrayActionValueApproximator(
-            std::function< std::vector<TAction>(TState) > _available_actions) 
-    : ActionValueApproximator<TState, TAction>(0.1), available_actions(_available_actions) {};
+            std::function< std::vector<TAction>(TState) > _available_actions)
+    : ActionValueApproximator<TState, TAction>(0.1), available_actions(_available_actions) {
+    };
 
     /**
      * Get argmax_a Q(s,a), it may contains several indices
@@ -492,7 +494,6 @@ public:
         //predict value for state
         run_out = net.run(in);
 
-
         for (size_t i = 0; i < net.get_num_output(); ++i) {
             if (i == action) desired_out[action] = value;
             else desired_out[i] = run_out[i];
@@ -579,39 +580,56 @@ public:
 template<typename TState>
 class StateValueApproximator {
 public:
+
+    StateValueApproximator(double beta) : beta(beta) {
+    }
+
     /**
-     * Get argmax_a Q(s,a), it may contains several indices
+     * Get argmax_s V(s) from the states already seen by the agent
      * @param state
      * @return argmax_a Q(s,a)
      */
-    virtual std::vector<TState> argmaxV() = 0;
+    virtual std::vector<TState> argmax() = 0;
+    
     /**
-     * Setter of the Q function
+     * Setter of the V function
      * @param state
      * @param action
      * @param value
      */
     virtual void V(TState state, double value) = 0;
+    
     /**
-     * @brief Get max Q(s,a)
+     * @brief Get max V(s)
      */
     virtual double max() = 0;
     /**
-     * @brief Get Q(s,a)
+     * @brief Get V(s)
      */
     virtual double V(TState state) = 0;
     /**
      * @brief reset the function approximation
      */
-    virtual double reset() = 0;
+    virtual void reset() = 0;
+
+    /**
+     * @brief Set the beta learning parameter
+     * @param beta
+     */
+    void set_learning_parameter(double beta) {
+        this->beta = beta;
+    };
+    
+protected:
+    double beta;
 };
 
 template<typename TState>
 class ArrayStateValueApproximator : public StateValueApproximator<TState> {
 public:
 
-    ArrayStateValueApproximator() {
-    };
+    ArrayStateValueApproximator(double beta) : StateValueApproximator<TState>(beta) {
+    }
 
     /**
      * Get argmax_a Q(s,a), it may contains several indices
@@ -636,13 +654,13 @@ public:
      * @param value
      */
     void V(TState state, double value) {
-        this->_V[state] = value;
+        this->_V[state] = this->V(state) + this->beta * (value - this->V(state));
     }
 
     /**
-     * @brief Get max Q(s,a)
+     * @brief Get max V(s)
      */
-    double max(TState state) {
+    double max() {
         double max = std::numeric_limits<double>::lowest();
         for (auto const &actionValue : this->_V) {
             if (max <= actionValue.second)
@@ -658,6 +676,8 @@ public:
      * @return 
      */
     double V(TState state) {
+        if (this->_V.find(state) == this->_V.end())
+            this->_V[state] = 0.0;
         return this->_V[state];
     }
 
