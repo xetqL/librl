@@ -25,12 +25,19 @@ public:
     }
 
     std::map<TAction, double> get_probabilities(RLAgent<TState, TAction>* agent, TState state) {
-        TAction bestAction = agent->q->argmax(state);
+        std::vector<TAction> actions = agent->get_available_actions();
+        double max = agent->q->max(state);
+        int number_of_optimal_action = 0;
+
+        for (auto const &action : actions)
+            if (agent->q->Q(state, action) == max) number_of_optimal_action++;
+
         std::map<TAction, double> probabilities;
-        int nb_actions = agent->get_available_actions().size();
-        for (auto const &action : agent->get_available_actions())
-            probabilities[action] = (1 - E) / (double) (nb_actions) - 1;
-        probabilities[bestAction] = E;
+        for (auto const &action : actions) {
+            probabilities[action] = agent->q->Q(state, action) == max ?
+                    (1 - E) / ((double) number_of_optimal_action) : E / ((double) actions.size() - number_of_optimal_action);
+        }
+
         return probabilities;
     }
 

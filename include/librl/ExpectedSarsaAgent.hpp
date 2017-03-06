@@ -45,7 +45,7 @@ public:
         for (auto const &actionProbabilities : probabilities) { //Weighted E(a | s)
             Vs += actionProbabilities.second * this->q->Q(next_state, actionProbabilities.first);
         }
-        return this->q->Q(prev_state, action) + this->alpha * (reward + this->gamma * Vs - this->q->Q(prev_state, action));
+        return reward + this->gamma * Vs;
     }
 
     double get_reinforcement(TState prev_state, TAction action, TState next_state, double reward) {

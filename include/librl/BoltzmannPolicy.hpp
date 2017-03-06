@@ -35,24 +35,24 @@ public:
     std::map<TAction, double> get_probabilities(RLAgent<TState, TAction>* agent, TState state) {
         double pSIGMA = 0;
 
-        const TState current_state = agent->current_state();
         std::map<TAction, double> probabilities;
-
+        std::vector<TAction> actions = agent->get_available_actions();
         const double actual_temp = this->temperature;
 
-        for (auto const &action : agent->get_available_actions()) {
-            pSIGMA += (double) std::exp(agent->q->Q(current_state, action) / actual_temp);
+        for (auto const &action : actions) {
+            pSIGMA += (double) std::exp(agent->q->Q(state, action) / actual_temp);
         }
 
         //exploitation
         if (!std::isfinite(pSIGMA) || pSIGMA != pSIGMA || pSIGMA == 0) {
-            probabilities[agent->q->argmax(current_state)] = 1;
+            GreedyPolicy<TState, TAction> g();
+            return g.get_probabilities(agent, state);
         } else {//otherwise, exploration
-            for (auto const &action : agent->get_available_actions()) {
-                probabilities[action] = std::exp(agent->q->Q(current_state, action) / actual_temp) / pSIGMA;
+            for (auto const &action : actions) {
+                probabilities[action] = std::exp(agent->q->Q(state, action) / actual_temp) / pSIGMA;
             }
+            return probabilities;
         }
-        return probabilities;
     }
 protected:
 

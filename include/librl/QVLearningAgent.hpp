@@ -17,7 +17,7 @@ public:
             std::shared_ptr<MDP<TState, TAction>> mdp,
             std::shared_ptr<ActionValueApproximator<TState, TAction>> ava,
             std::shared_ptr<StateValueApproximator<TState>> sva)
-    : RLAgent<TState, TAction>(pi, mdp, ava), alpha(params[0]), gamma(params[1]), beta(params[2]), q(ava), v(sva) {
+    : RLAgent<TState, TAction>(pi, mdp, ava), gamma(params[1]), v(sva) {
     }
 
     std::string getName() {
@@ -66,7 +66,7 @@ public:
     }
     std::shared_ptr<StateValueApproximator<TState> > v;
 
-    std::shared_ptr<ActionValueApproximator<TState, TAction> > q;
+    //std::shared_ptr<ActionValueApproximator<TState, TAction> > q;
 
     double gamma;
 
