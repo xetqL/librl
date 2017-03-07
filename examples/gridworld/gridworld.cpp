@@ -5,6 +5,7 @@
  * Created on February 27, 2017, 11:10 AM
  */
 #include "../../include/librl/ExpectedSarsaAgent.hpp"
+#include "../../include/librl/DoubleQLearningAgent.hpp"
 
 #include "gridworld.hpp"
 
@@ -73,24 +74,32 @@ int main(int argc, char** argv) {
 
 
     std::shared_ptr<MDP<Maze, Move>> maze_mdp = make_shared<MDP<Maze, Move >> (S, A, R, T, entry_state);
-    
+
     // e-Greedy exploration policy
     std::shared_ptr<Policy<Maze, Move>> policy_egreedy = std::make_shared<EGreedyPolicy<Maze, Move >> (0.2);
-    
+
     // Greedy exploration policy
-    std::shared_ptr<Policy<Maze, Move>> policy_greedy = std::make_shared<GreedyPolicy<Maze, Move >>();
-    
+    std::shared_ptr<Policy<Maze, Move>> policy_greedy = std::make_shared<GreedyPolicy<Maze, Move >> ();
+
     // Action value approximator that uses an array
     std::shared_ptr<ActionValueApproximator<Maze, Move>> afa = make_shared<ArrayActionValueApproximator<Maze, Move >> (0.3, A);
-    
+
     // Action value approximator that uses an array
-    std::shared_ptr<StateValueApproximator<Maze>> sfa(new ArrayStateValueApproximator<Maze> (0.3));
-    
+    std::shared_ptr<DoubleApproximator<Maze, Move>> dblfa = make_shared<DoubleApproximator<Maze, Move >> (0.3, A);
+
+
+    // Action value approximator that uses an array
+    std::shared_ptr<StateValueApproximator < Maze >> sfa(new ArrayStateValueApproximator<Maze> (0.3));
+
     // Sarsa RL agent
-    std::shared_ptr<RLAgent<Maze, Move >> player(
+    std::shared_ptr<RLAgent<Maze, Move >> player_esa(
             new ExpectedSarsaAgent<Maze, Move>({0.3, 0.9}, policy_egreedy, maze_mdp, afa)
             );
-    const int START_SHOW = 500;
+
+    std::shared_ptr<RLAgent<Maze, Move >> player(
+            new DoubleQLearningAgent<Maze, Move>({0.3, 0.9}, policy_egreedy, maze_mdp, dblfa)
+            );
+    const int START_SHOW = 750;
     const int RESTART_AFTER = 100000;
     const int LEARNING_ITERATIONS = 1100;
     double r = 0.0;

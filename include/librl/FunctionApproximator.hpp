@@ -162,9 +162,9 @@ public:
             double _alpha,
             std::function< std::vector<TAction>(TState) > _available_actions) :
     ActionValueApproximator<TState, TAction>(_alpha, _available_actions),
-    dis(0, 1),
-    qa(_alpha, _available_actions),
-    qb(_alpha, _available_actions) {
+    qa(new ArrayActionValueApproximator<TState, TAction>(_alpha, _available_actions)),
+    qb(new ArrayActionValueApproximator<TState, TAction>(_alpha, _available_actions)) {
+        this->dis = std::uniform_int_distribution<>(0, 1);
     };
 
     /**
@@ -184,7 +184,7 @@ public:
     }
 
     void approximate(TState prev_state, TAction action, TState next_state, double reward, double gamma) {
-        int updateA = this->dis(this->gen);
+        int updateA  = rand() % 2;
         TAction aStar, bStar;
         double q;
         std::shared_ptr<ArrayActionValueApproximator<TState, TAction>>
@@ -197,15 +197,13 @@ public:
                     prev_state,
                     action,
                     q + this->alpha * (reward + gamma * rightApproximator->Q(next_state, aStar) - q));
-            return leftApproximator->Q(prev_state, action);
         } else {
             bStar = rightApproximator->argmax(next_state);
             q = rightApproximator->Q(prev_state, action);
             rightApproximator->Q(
                     prev_state,
                     action,
-                    q + this->alpha * (reward + gamma * leftApproximator->Q(next_state, aStar) - q));
-            return rightApproximator->Q(prev_state, action);
+                    q + this->alpha * (reward + gamma * leftApproximator->Q(next_state, bStar) - q));
         }
     }
 
@@ -237,6 +235,8 @@ public:
         this->qa->reset();
         this->qb->reset();
     }
+    std::shared_ptr<ArrayActionValueApproximator<TState, TAction>> qa, qb;
+
 protected:
 
     /**
@@ -248,10 +248,8 @@ protected:
     void Q(TState state, TAction action, double value) {
 
     }
-    std::mt19937 gen(std::random_device());
+    constexpr std::mt19937 gen(std::random_device());
     std::uniform_int_distribution<> dis;
-
-    std::shared_ptr<ArrayActionValueApproximator<TState, TAction>> qa, qb;
 };
 
 template<typename TState, typename TAction>

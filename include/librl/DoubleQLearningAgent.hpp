@@ -11,13 +11,10 @@ public:
             std::vector<double> params,
             std::shared_ptr<Policy<TState, TAction>> pi,
             std::shared_ptr<MDP<TState, TAction>> mdp,
-            DoubleApproximator<TState, TAction> dba)
+            std::shared_ptr<DoubleApproximator<TState, TAction>> dba)
     : RLAgent<TState, TAction>(pi, mdp, dba) {
         this->gamma = params[1];
         this->alpha = params[0];
-#if LOGGING_STATE_ENABLED
-        printf("Agent %s is starting at state %d\n", this->uuid.c_str(), this->currentState);
-#endif
     }
 
     /**
@@ -26,9 +23,9 @@ public:
      * @param reward the reward associated with the performed action
      */
     void learn(TState prev_state, TAction action, TState next_state, double reward) {
-        this->get_reinforcement(prev_state, action, next_state, reward); //Update Qa|b as a side effect
-        //this->stats->update(this->current_state(), action, reward);
-    }
+        std::static_pointer_cast<DoubleApproximator<TState, TAction>>(this->q)->approximate(prev_state, action, next_state, reward, this->gamma);
+        //this->get_reinforcement(prev_state, action, next_state, reward); //Update Qa|b as a side effect
+    }   
 
     std::string getName() {
         return "Double Q-Learning";
