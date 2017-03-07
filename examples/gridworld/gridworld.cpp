@@ -4,11 +4,64 @@
  *
  * Created on February 27, 2017, 11:10 AM
  */
-#include <librl/QLearningAgent.hpp>
-#include <librl/ExpectedSarsaAgent.hpp>
+#include "../../include/librl/ExpectedSarsaAgent.hpp"
+
 #include "gridworld.hpp"
 
 using namespace std;
+
+Maze T(Maze maze, Move m) {
+    Position player_location = locate_player(maze);
+    assert(is_valid(maze, m, player_location));
+    maze[player_location.first][player_location.second] = EMPTY;
+    player_location = apply_move(player_location, m);
+    maze[player_location.first][player_location.second] = PLAYER;
+    return maze;
+}
+
+std::vector<Maze> S() {
+    Maze m = {
+        {EMPTY, EMPTY, EMPTY, STOP},
+        {EMPTY, EMPTY, EMPTY, EMPTY},
+        {EMPTY, HOLE, EMPTY, EMPTY},
+        {EMPTY, EMPTY, EMPTY, EMPTY}
+    }, tmp = m;
+    std::vector<Maze> states;
+    for (size_t i = 0; i < m.size(); i++) {
+        for (size_t j = 0; j < m[i].size(); j++) {
+            if (m[i][j] == EMPTY) {
+                tmp[i][j] = PLAYER;
+                states.push_back(tmp);
+                tmp = m;
+            }
+        }
+    }
+    return states;
+}
+
+double R(Maze maze, Move m) {
+    Position player_location = locate_player(maze);
+    assert(is_valid(maze, m, player_location));
+    Position after_move = apply_move(player_location, m);
+    if (maze[after_move.first][after_move.second] == STOP) {
+        return 0.0;
+    }
+    if (maze[after_move.first][after_move.second] == HOLE) {
+        return -100.0;
+    }
+    return -1.0;
+}
+
+std::vector<Move> A(Maze maze) {
+    Position player_location = locate_player(maze);
+    std::vector<Move> restricted_moves;
+    if (is_valid(maze, LEFT, player_location)) restricted_moves.insert(restricted_moves.begin(), LEFT);
+    if (is_valid(maze, RIGHT, player_location))restricted_moves.insert(restricted_moves.begin(), RIGHT);
+    if (is_valid(maze, UP, player_location)) restricted_moves.insert(restricted_moves.begin(), UP);
+    if (is_valid(maze, DOWN, player_location)) restricted_moves.insert(restricted_moves.begin(), DOWN);
+
+    return restricted_moves;
+}
 
 int main(int argc, char** argv) {
 

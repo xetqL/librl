@@ -8,11 +8,11 @@
 #ifndef GRIDWORLD_HPP
 #define GRIDWORLD_HPP
 
-#include <librl/SarsaAgent.hpp>
-#include <librl/EGreedyPolicy.hpp>
-#include <librl/util.hpp>
-#include <librl/MDP.hpp>
-#include <librl/FunctionApproximator.hpp>
+#include "../../include/librl/SarsaAgent.hpp"
+#include "../../include/librl/EGreedyPolicy.hpp"
+#include "../../include/librl/util.hpp"
+#include "../../include/librl/MDP.hpp"
+#include "../../include/librl/FunctionApproximator.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -43,7 +43,7 @@ typedef int Move;
 #define DOWN  3
 
 /**
- * O(n*m) algorithm to locate player in a maze
+ * O(n*m) algorithm to locate player in the maze
  * @param m
  * @return The player position in the maze
  */
@@ -57,7 +57,7 @@ Position locate_player(Maze m) {
 }
 
 /**
- * O(n*m) algorithm to locate player in a maze
+ * O(n*m) algorithm to locate player in the maze
  * @param m
  * @return The player position in the maze
  */
@@ -149,60 +149,6 @@ Position apply_move(Position player_location, Move m) {
     default:
         throw "Unacceptable move !";
     }
-}
-
-Maze T(Maze maze, Move m) {
-    Position player_location = locate_player(maze);
-    assert(is_valid(maze, m, player_location));
-    maze[player_location.first][player_location.second] = EMPTY;
-    player_location = apply_move(player_location, m);
-    maze[player_location.first][player_location.second] = PLAYER;
-    return maze;
-}
-
-std::vector<Maze> S() {
-    Maze m = {
-        {EMPTY, EMPTY, EMPTY, STOP},
-        {EMPTY, EMPTY, EMPTY, EMPTY},
-        {EMPTY, HOLE, EMPTY, EMPTY},
-        {EMPTY, EMPTY, EMPTY, EMPTY}
-    }, tmp = m;
-    std::vector<Maze> states;
-    for (size_t i = 0; i < m.size(); i++) {
-        for (size_t j = 0; j < m[i].size(); j++) {
-            if (m[i][j] == EMPTY) {
-                tmp[i][j] = PLAYER;
-                states.push_back(tmp);
-                tmp = m;
-            }
-        }
-    }
-    return states;
-}
-
-double R(Maze maze, Move m) {
-    Position player_location = locate_player(maze);
-    assert(is_valid(maze, m, player_location));
-    Position after_move = apply_move(player_location, m);
-    if (maze[after_move.first][after_move.second] == STOP) {
-        return 10.0;
-    }
-    if (maze[after_move.first][after_move.second] == HOLE) {
-
-        return -100.0;
-    }
-    return -1.0;
-}
-
-std::vector<Move> A(Maze maze) {
-    Position player_location = locate_player(maze);
-    std::vector<Move> restricted_moves;
-    if (is_valid(maze, LEFT, player_location)) restricted_moves.insert(restricted_moves.begin(), LEFT);
-    if (is_valid(maze, RIGHT, player_location))restricted_moves.insert(restricted_moves.begin(), RIGHT);
-    if (is_valid(maze, UP, player_location)) restricted_moves.insert(restricted_moves.begin(), UP);
-    if (is_valid(maze, DOWN, player_location)) restricted_moves.insert(restricted_moves.begin(), DOWN);
-
-    return restricted_moves;
 }
 
 void clear() {

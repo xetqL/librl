@@ -29,9 +29,8 @@ public:
     }
 
     void reset() {
-        this->stats = std::make_shared<AgentStatistics>();
         this->pi->reset();
-        this->q.reset();
+        this->q->reset();
     }
 
     void set_learning_parameters(std::vector<double> parameters) {

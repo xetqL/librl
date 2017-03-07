@@ -13,6 +13,8 @@
 #include <limits>
 #include <iostream>
 #include <utility>
+#include <type_traits>
+#include <random>
 
 #include "doublefann.h"
 #include "fann_cpp.h"
@@ -23,10 +25,10 @@ template<typename TState, typename TAction>
 class ActionValueApproximator {
 public:
 
-    ActionValueApproximator(double _alpha) : alpha(_alpha) {
+    ActionValueApproximator(double _alpha, std::function< std::vector<TAction>(TState) > _available_actions) : alpha(_alpha), available_actions(_available_actions) {
     }
 
-    ActionValueApproximator() : alpha(1.0) {
+    ActionValueApproximator(std::function< std::vector<TAction>(TState) > _available_actions) : alpha(1.0), available_actions(_available_actions) {
     }
     /**
      * Get argmax_a Q(s,a), it may contains several indices
@@ -34,13 +36,7 @@ public:
      * @return argmax_a Q(s,a)
      */
     virtual TAction argmax(TState state) = 0;
-    /**
-     * Setter of the Q function
-     * @param state
-     * @param action
-     * @param value
-     */
-    virtual void Q(TState state, TAction action, double value) = 0;
+
     /**
      * @brief Get max Q(s,a)
      */
@@ -57,24 +53,32 @@ public:
     void set_learning_parameter(double alpha) {
         this->alpha = alpha;
     }
-protected:
+    /**
+     * Setter of the Q function
+     * @param state
+     * @param action
+     * @param value
+     */
+    virtual void Q(TState state, TAction action, double value) = 0;
+
     double alpha;
+    std::function< std::vector<TAction>(TState) > available_actions;
 };
 
 template<typename TState, typename TAction>
-class DoubleApproximator : public ActionValueApproximator<TState, TAction> {
+class ArrayActionValueApproximator : public ActionValueApproximator<TState, TAction> {
 public:
 
-    DoubleApproximator() {
+    ArrayActionValueApproximator(
+            double _alpha,
+            std::function< std::vector<TAction>(TState) > _available_actions)
+    : ActionValueApproximator<TState, TAction>(_alpha, _available_actions) {
     };
 
-    TAction argmaxQa(TState state) {
-        return this->argmax(this->Qa, state);
-    }
-
-    TAction argmaxQb(TState state) {
-        return this->argmax(this->Qb, state);
-    }
+    ArrayActionValueApproximator(
+            std::function< std::vector<TAction>(TState) > _available_actions)
+    : ActionValueApproximator<TState, TAction>(0.1, _available_actions) {
+    };
 
     /**
      * Get argmax_a Q(s,a), it may contains several indices
@@ -83,29 +87,126 @@ public:
      */
     TAction argmax(TState state) {
         double max = this->max(state);
-        std::set<TAction> all;
-        for (auto const &actionValue : this->Qa[state]) {
-            if (max == this->Q(state, actionValue.first)) {
-                all.insert(actionValue.first);
+
+        std::vector<TAction> all_actions;
+
+        for (auto const &action : this->available_actions(state)) {
+            if (max == this->Q(state, action)) {
+                all_actions.push_back(action);
             }
         }
-        for (auto const &actionValue : this->Qb[state]) {
-            // TODO: reduce complexity
-            if (max == actionValue.second) {
-                all.insert(actionValue.first);
-            }
-        }
-        return *select_randomly(all.begin(), all.end());
+        //std::cout << "Random between : " << all_actions.size() << std::endl;
+        //if(all_actions.size() == 9) { std::cout<<max;print_tictactoe(state); }
+        //std::cout << (all_actions.begin() == all_actions.end()) << std::endl;
+        return *select_randomly(all_actions.begin(), all_actions.end());
     }
 
     /**
-     * Setter of the Q function
+     * @brief Get max_a Q(s,a)
+     */
+    double max(TState state) {
+        double max = this->available_actions(state).size() > 0 ? std::numeric_limits<double>::lowest() : 1.0;
+        for (auto const &action : this->available_actions(state)) {
+            double qv = this->Q(state, action);
+            if (max <= qv) max = qv;
+        }
+        return max;
+    }
+
+    /**
+     * Get the Expected Reward for a in s.
+     * @param state
+     * @param action
+     * @return 
+     */
+    double Q(TState state, TAction action) {
+        if (this->_Q.find(state) == this->_Q.end())
+            this->_Q[state] = std::map<TAction, double>();
+        if (this->_Q[state].find(action) == this->_Q[state].end())
+            this->_Q[state][action] = 0.0;
+        return this->_Q[state][action];
+    }
+
+    /**
+     * @brief reset the function approximation
+     */
+    void reset() {
+        this->_Q.clear();
+    }
+
+    int number_of_explored_states() {
+        return this->_Q.size();
+    }
+
+    bool has_seen_state(TState s) {
+        return (this->_Q.find(s) != this->_Q.end());
+    }
+
+    /**
+     * Setter of the Q function with value from RL agent
      * @param state
      * @param action
      * @param value
      */
     void Q(TState state, TAction action, double value) {
-        ;
+        this->_Q[state][action] = this->Q(state, action) + this->alpha * (value - this->Q(state, action));
+    }
+    std::map<TState, std::map<TAction, double> > _Q;
+};
+
+template<typename TState, typename TAction>
+class DoubleApproximator : public ActionValueApproximator<TState, TAction> {
+public:
+
+    DoubleApproximator(
+            double _alpha,
+            std::function< std::vector<TAction>(TState) > _available_actions) :
+    ActionValueApproximator<TState, TAction>(_alpha, _available_actions),
+    dis(0, 1),
+    qa(_alpha, _available_actions),
+    qb(_alpha, _available_actions) {
+    };
+
+    /**
+     * Get argmax_a Q(s,a), it may contains several indices
+     * @param state
+     * @return argmax_a Q(s,a)
+     */
+    TAction argmax(TState state) {
+        double max = this->max(state);
+        std::vector<TAction> all_actions;
+        for (auto const &action : this->available_actions(state)) {
+            if (max == this->Q(state, action)) {
+                all_actions.push_back(action);
+            }
+        }
+        return *select_randomly(all_actions.begin(), all_actions.end());
+    }
+
+    void approximate(TState prev_state, TAction action, TState next_state, double reward, double gamma) {
+        int updateA = this->dis(this->gen);
+        TAction aStar, bStar;
+        double q;
+        std::shared_ptr<ArrayActionValueApproximator<TState, TAction>>
+                leftApproximator = this->qa,
+                rightApproximator = this->qb;
+        if (updateA) {
+            aStar = leftApproximator->argmax(next_state);
+            q = leftApproximator->Q(prev_state, action);
+            leftApproximator->Q(
+                    prev_state,
+                    action,
+                    q + this->alpha * (reward + gamma * rightApproximator->Q(next_state, aStar) - q));
+            return leftApproximator->Q(prev_state, action);
+        } else {
+            bStar = rightApproximator->argmax(next_state);
+            q = rightApproximator->Q(prev_state, action);
+            rightApproximator->Q(
+                    prev_state,
+                    action,
+                    q + this->alpha * (reward + gamma * leftApproximator->Q(next_state, aStar) - q));
+            return rightApproximator->Q(prev_state, action);
+        }
     }
 
     /**
@@ -113,9 +214,7 @@ public:
      */
     double max(TState state) {
         double max = std::numeric_limits<double>::lowest();
-        std::set<TAction> all_actions;
-        for (auto const &actionValue : this->Qa[state]) all_actions.insert(actionValue.first);
-        for (auto const &actionValue : this->Qb[state]) all_actions.insert(actionValue.first);
+        std::vector<TAction> all_actions = this->available_actions(state);
         for (auto const &action : all_actions) {
             if (max <= this->Q(state, action))
                 max = this->Q(state, action);
@@ -128,45 +227,41 @@ public:
     }
 
     double Q(TState state, TAction action) {
-        if (this->Qa[state].find(action) != this->Qa[state].end()) {
-            if (this->Qb[state].find(action) != this->Qb[state].end())
-                return merge(this->Qa[state][action], this->Qb[state][action]);
-            else
-                return this->Qa[state][action];
-        } else if (this->Qb[state].find(action) != this->Qb[state].end()) {
-            return this->Qb[state][action];
-        } else
-            return 0;
+        return merge(this->qa->Q(state, action), this->qb->Q(state, action));
     }
 
     /**
      * @brief reset the function approximation
      */
     void reset() {
-        this->Qa.clear();
-        this->Qb.clear();
+        this->qa->reset();
+        this->qb->reset();
     }
+protected:
 
-    TAction argmax(std::map<TState, std::map<TAction, double>> selectedQ, TState state) {
-        double max = std::numeric_limits<double>::lowest();
-        TAction id;
-        for (auto const &actionValue : selectedQ[state]) {
-            if (max < actionValue.second) max = actionValue.second;
-            id = actionValue.first;
-        }
-        return id;
+    /**
+     * Setter of the Q function
+     * @param state
+     * @param action
+     * @param value
+     */
+    void Q(TState state, TAction action, double value) {
+
     }
-    std::map<TState, std::map<TAction, double>> Qa, Qb;
+    std::mt19937 gen(std::random_device());
+    std::uniform_int_distribution<> dis;
+
+    std::shared_ptr<ArrayActionValueApproximator<TState, TAction>> qa, qb;
 };
 
 template<typename TState, typename TAction>
 class AfterstateValueApproximator : public ActionValueApproximator<TState, TAction> {
 public:
 
-    AfterstateValueApproximator(double _alpha, std::function< std::vector<TAction>(TState) > _available_actions, std::function<TState(TState, TAction) > _state_transition) : ActionValueApproximator<TState, TAction>(_alpha), available_actions(_available_actions), state_transition(_state_transition) {
+    AfterstateValueApproximator(double _alpha, std::function< std::vector<TAction>(TState) > _available_actions, std::function<TState(TState, TAction) > _state_transition) : ActionValueApproximator<TState, TAction>(_alpha, _available_actions), state_transition(_state_transition) {
     };
 
-    AfterstateValueApproximator(std::function< std::vector<TAction>(TState) > _available_actions, std::function<TState(TState, TAction) > _state_transition) : ActionValueApproximator<TState, TAction>(0.1), available_actions(_available_actions), state_transition(_state_transition) {
+    AfterstateValueApproximator(std::function< std::vector<TAction>(TState) > _available_actions, std::function<TState(TState, TAction) > _state_transition) : ActionValueApproximator<TState, TAction>(0.1, _available_actions), state_transition(_state_transition) {
     };
 
     char piece_to_char(int p) {
@@ -199,7 +294,7 @@ public:
 
         std::vector<TAction> all_actions;
 
-        for (auto const &action : available_actions(state)) {
+        for (auto const &action : this->available_actions(state)) {
             if (max == this->Q(state, action)) {
                 all_actions.push_back(action);
             }
@@ -217,19 +312,8 @@ public:
      * @param value
      */
     void Q(TState state, TAction action, double value) {
-        //std::cout << (this->_Q.find(state) != this->_Q.end()) << std::endl;
-        /*std::map<TAction, double> action_value = this->_Q[state];
-        std::cout << action_value[action] << std::endl;
-        action_value[action] = value;
-        std::cout << action_value[action] << std::endl;*/
-        /*action_value.erase(action);
-        action_value.insert(std::make_pair(action, value));
-        this->_Q.erase(state);
-        this->_Q.insert(std::make_pair(state, action_value));
-         */
         this->_afterstate[state_transition(state, action)] = this->Q(state, action) + this->alpha * (value - this->Q(state, action));
         this->_Q[state][action] = this->_afterstate[state_transition(state, action)];
-        //std::cout << "Q value is updated and is now equal to : " << this->_Q[state][action] << std::endl;
     }
 
     /**
@@ -238,7 +322,7 @@ public:
     double max(TState state) {
         double max = available_actions(state).size() > 0 ? std::numeric_limits<double>::lowest() : 1.0;
         //std::cout << "==========================" <<std::endl;
-        for (auto const &action : available_actions(state)) {
+        for (auto const &action : this->available_actions(state)) {
             double qv = this->Q(state, action);
             if (max <= qv) max = qv;
         }
@@ -280,104 +364,12 @@ public:
     int number_of_explored_states() {
         return this->_Q.size();
     }
-
+protected:
     std::map<TState, std::map<TAction, double> > _Q;
 
     std::map<TState, double> _afterstate;
 
-    std::function<std::vector<TAction>(TState) > available_actions;
     std::function<TState(TState, TAction) > state_transition;
-};
-
-template<typename TState, typename TAction>
-class ArrayActionValueApproximator : public ActionValueApproximator<TState, TAction> {
-public:
-
-    ArrayActionValueApproximator(
-            double _alpha,
-            std::function< std::vector<TAction>(TState) > _available_actions)
-    : ActionValueApproximator<TState, TAction>(_alpha), available_actions(_available_actions) {
-    };
-
-    ArrayActionValueApproximator(
-            std::function< std::vector<TAction>(TState) > _available_actions)
-    : ActionValueApproximator<TState, TAction>(0.1), available_actions(_available_actions) {
-    };
-
-    /**
-     * Get argmax_a Q(s,a), it may contains several indices
-     * @param state
-     * @return argmax_a Q(s,a)
-     */
-    TAction argmax(TState state) {
-        double max = this->max(state);
-
-        std::vector<TAction> all_actions;
-
-        for (auto const &action : available_actions(state)) {
-            if (max == this->Q(state, action)) {
-                all_actions.push_back(action);
-            }
-        }
-        //std::cout << "Random between : " << all_actions.size() << std::endl;
-        //if(all_actions.size() == 9) { std::cout<<max;print_tictactoe(state); }
-        //std::cout << (all_actions.begin() == all_actions.end()) << std::endl;
-        return *select_randomly(all_actions.begin(), all_actions.end());
-    }
-
-    /**
-     * Setter of the Q function with value from RL agent
-     * @param state
-     * @param action
-     * @param value
-     */
-    void Q(TState state, TAction action, double value) {
-        this->_Q[state][action] = this->Q(state, action) + this->alpha * (value - this->Q(state, action));
-    }
-
-    /**
-     * @brief Get max_a Q(s,a)
-     */
-    double max(TState state) {
-        double max = available_actions(state).size() > 0 ? std::numeric_limits<double>::lowest() : 1.0;
-        for (auto const &action : available_actions(state)) {
-            double qv = this->Q(state, action);
-            if (max <= qv) max = qv;
-        }
-        return max;
-    }
-
-    /**
-     * Get the Expected Reward for a in s.
-     * @param state
-     * @param action
-     * @return 
-     */
-    double Q(TState state, TAction action) {
-        if (this->_Q.find(state) == this->_Q.end())
-            this->_Q[state] = std::map<TAction, double>();
-        if (this->_Q[state].find(action) == this->_Q[state].end())
-            this->_Q[state][action] = 0.0;
-        return this->_Q[state][action];
-    }
-
-    /**
-     * @brief reset the function approximation
-     */
-    void reset() {
-        this->_Q.clear();
-    }
-
-    bool has_seen_state(TState s) {
-        return (this->_Q.find(s) != this->_Q.end());
-    }
-
-    int number_of_explored_states() {
-        return this->_Q.size();
-    }
-
-    std::map<TState, std::map<TAction, double> > _Q;
-    std::function<std::vector<TAction>(TState) > available_actions;
 };
 
 template<typename TState>
@@ -590,7 +582,7 @@ public:
      * @return argmax_a Q(s,a)
      */
     virtual std::vector<TState> argmax() = 0;
-    
+
     /**
      * Setter of the V function
      * @param state
@@ -598,7 +590,7 @@ public:
      * @param value
      */
     virtual void V(TState state, double value) = 0;
-    
+
     /**
      * @brief Get max V(s)
      */
@@ -619,7 +611,7 @@ public:
     void set_learning_parameter(double beta) {
         this->beta = beta;
     };
-    
+
 protected:
     double beta;
 };
