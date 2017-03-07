@@ -378,7 +378,7 @@ public:
             int _hidden_neurons,
             int _output_neurons,
             std::function< std::vector<int>(TState) > _available_actions)
-    : available_actions(_available_actions) {
+    : ActionValueApproximator<TState, int>(0.3, _available_actions) {
         if (net.create_standard(9, _input_neurons,
                 _hidden_neurons,
                 2 * _hidden_neurons,
@@ -403,7 +403,7 @@ public:
             int _output_neurons,
             std::function< std::vector<double>(TState) > state_to_vector,
             std::function< std::vector<int>(TState) > _available_actions)
-    : available_actions(_available_actions), stov(state_to_vector) {
+    : ActionValueApproximator<TState, int>(0.3, _available_actions), stov(state_to_vector) {
         if (net.create_standard(9, _input_neurons,
                 _hidden_neurons,
                 2 * _hidden_neurons,
@@ -460,7 +460,7 @@ public:
         run_out = net.run(in);
 
         //find argmax in prediction value which is available in that state
-        return filtered_argmax(run_out, state, available_actions);
+        return filtered_argmax(run_out, state, this->available_actions);
     }
 
     /**
@@ -509,7 +509,7 @@ public:
         //predict value for state
         run_out = net.run(in);
         //find argmax in prediction value which is available in that state
-        return filtered_max(run_out, state, available_actions);
+        return filtered_max(run_out, state, this->available_actions);
     }
 
     int filtered_argmax(fann_type* matrix, TState state, std::function<std::vector<int>(TState) > A) {
@@ -551,18 +551,13 @@ public:
         return out[action];
     }
 
-    std::function<std::vector<int>(TState) > available_actions;
-
-    /**
-     * By default we assume that the state is a vectorial representation
-     * @param state
-     * @return the state without doing anything
-     */
-    std::vector<double> it_is_a_vector(TState state) {
-        return state;
-    }
-
-    std::function< std::vector<double>(TState) > stov = it_is_a_vector;
+    std::function< std::vector<double>(TState) > stov = [](TState state){
+        std::vector<double> r;
+        for(auto const &row: state){
+            for(auto const &cell: row) r.push_back((double)cell);
+        }
+        return r;
+    };
 
     FANN::neural_net net;
 };
