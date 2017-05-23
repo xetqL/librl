@@ -19,6 +19,6 @@ cd librl
 sudo make install
 ```
 
-If you have any questions, please ask: [anthony.boulmier@hesge.ch](mailto:anthony.boulmier@hesge.ch?subject="Questions about librl")
+If you have any questions, please ask: [anthony.boulmier@hesge.ch]
 
 
