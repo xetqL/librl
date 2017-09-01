@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   tictactoe.hpp
  * Author: xetql
  *
@@ -8,11 +8,11 @@
 #ifndef TICTACTOE_HPP
 #define TICTACTOE_HPP
 
-#include <librl/RLAlgorithms.hpp>
-#include <librl/Policies.hpp>
-#include <librl/util.hpp>
-#include <librl/MDP.hpp>
-#include <librl/FunctionApproximator.hpp>
+#include "../../include/librl/RLAlgorithms.hpp"
+#include "../../include/librl/Policies.hpp"
+#include "../../include/librl/util.hpp"
+#include "../../include/librl/MDP.hpp"
+#include "../../include/librl/FunctionApproximator.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -183,7 +183,7 @@ Move random_good_move(tictactoe state, piece whom) {
         if (a.first == 0 && a.second == 2) return a;
         if (a.first == 2 && a.second == 0) return a;
         if (a.first == 1 && a.second == 1) return a;
-        
+
         if (is_a_winning_move(state, a, whom)) {
             return a;
         }
@@ -218,4 +218,3 @@ void clear() {
 }
 
 #endif /* TICTACTOE_HPP */
-

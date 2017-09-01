@@ -7,18 +7,18 @@ template<typename TState, typename TAction>
 class UCB1Policy : public Policy<TState, TAction> {
 public:
 
-    TAction choose_action(RLAgent<TState, TAction>* agent) {
+    TAction choose_action(const RLAgent<TState, TAction>* agent) const {
         return ucb1Exploration(agent);
     }
 
-    std::string getName() {
+    std::string getName() const {
         return "UCB1 Exploration";
     }
 
     void reset() {
     }
 
-    std::vector<double> get_probabilities(RLAgent<TState, TAction>* agent, TState state) {
+    std::vector<double> get_probabilities(const RLAgent<TState, TAction>* agent, TState state) const {
         const int nb_actions = agent->get_available_actions().size();
         std::vector<double> probabilities(nb_actions, 0);
         double ucbValue, max = std::numeric_limits<double>::lowest();
@@ -35,7 +35,7 @@ public:
         return probabilities;
     }
 
-    TAction ucb1Exploration(RLAgent<TState, TAction>* agent) {
+    TAction ucb1Exploration(const RLAgent<TState, TAction>* agent) const {
         double max = std::numeric_limits<double>::lowest(), ucbValue;
         const int nb_actions = agent->get_available_actions().size(),
                 current_state = agent->current_state(),

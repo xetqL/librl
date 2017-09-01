@@ -1,11 +1,10 @@
-/* 
+/*
  * File:   gridworld.cpp
  * Author: xetql
  *
  * Created on February 27, 2017, 11:10 AM
  */
-#include "../../include/librl/ExpectedSarsaAgent.hpp"
-#include "../../include/librl/DoubleQLearningAgent.hpp"
+#include "../../include/librl/RLAlgorithms.hpp"
 
 #include "gridworld.hpp"
 
@@ -73,41 +72,32 @@ int main(int argc, char** argv) {
     };
 
 
-    std::shared_ptr<MDP<Maze, Move>> maze_mdp = make_shared<MDP<Maze, Move >> (S, A, R, T, entry_state);
-
+    MDP<Maze, Move> maze_mdp = MDP<Maze, Move >(S, A, R, T, entry_state);
     // e-Greedy exploration policy
-    std::shared_ptr<Policy<Maze, Move>> policy_egreedy = std::make_shared<EGreedyPolicy<Maze, Move >> (0.2);
-
-    // Greedy exploration policy
-    std::shared_ptr<Policy<Maze, Move>> policy_greedy = std::make_shared<GreedyPolicy<Maze, Move >> ();
-
+    EGreedyPolicy<Maze, Move> policy_egreedy = EGreedyPolicy<Maze, Move > (0.1);
+    //  Greedy exploration policy
+    GreedyPolicy<Maze, Move> policy_greedy = GreedyPolicy<Maze, Move> ();
     // Action value approximator that uses an array
-    std::shared_ptr<ActionValueApproximator<Maze, Move>> afa = make_shared<ArrayActionValueApproximator<Maze, Move >> (0.3, A);
-
+    ArrayActionValueApproximator<Maze, Move> afa = ArrayActionValueApproximator<Maze, Move > (0.3, A);
     // Action value approximator that uses an array
-    std::shared_ptr<DoubleApproximator<Maze, Move>> dblfa = make_shared<DoubleApproximator<Maze, Move >> (0.3, A);
-
-
+    DoubleApproximator<Maze, Move> dblfa = DoubleApproximator<Maze, Move > (0.3, A);
     // Action value approximator that uses an array
-    std::shared_ptr<StateValueApproximator < Maze >> sfa(new ArrayStateValueApproximator<Maze> (0.3));
+    ArrayStateValueApproximator <Maze> sfa =  ArrayStateValueApproximator<Maze> (0.3);
 
     // Sarsa RL agent
-    std::shared_ptr<RLAgent<Maze, Move >> player_esa(
-            new ExpectedSarsaAgent<Maze, Move>({0.3, 0.9}, policy_egreedy, maze_mdp, afa)
-            );
-
     std::shared_ptr<RLAgent<Maze, Move >> player(
-            new DoubleQLearningAgent<Maze, Move>({0.3, 0.9}, policy_egreedy, maze_mdp, dblfa)
-            );
+        ReinforcementLearningAgentFactory<Maze, Move>::get_instance("qlearning", 0.9, &policy_egreedy, &maze_mdp, &afa, &sfa)
+    );
+    
     const int START_SHOW = 750;
     const int RESTART_AFTER = 100000;
-    const int LEARNING_ITERATIONS = 1100;
+    int LEARNING_ITERATIONS = 1100;
     double r = 0.0;
     for (size_t i = 0; i < LEARNING_ITERATIONS; ++i) {
 
         if (i >= START_SHOW) {
-            print_maze(maze_mdp->current_state);
-            player->set_behavioral_policy(policy_greedy);
+            print_maze(maze_mdp.current_state);
+            player->set_behavioral_policy(&policy_greedy);
         }
 
         if (i > START_SHOW) std::this_thread::sleep_for(std::chrono::milliseconds(250));
@@ -117,8 +107,8 @@ int main(int argc, char** argv) {
         while (trial < RESTART_AFTER) {
             if (i >= START_SHOW) clear();
             auto sel_a = player->choose_action();
-            double reward = maze_mdp->get_reward(sel_a);
-            pair<Maze, Maze> prev_next_states = maze_mdp->perform_state_transition(sel_a);
+            double reward = maze_mdp.get_reward(sel_a);
+            pair<Maze, Maze> prev_next_states = maze_mdp.perform_state_transition(sel_a);
             if (i >= START_SHOW) print_maze(prev_next_states.second);
             player->learn(prev_next_states.first, sel_a, prev_next_states.second, reward);
             r += reward;
@@ -129,9 +119,7 @@ int main(int argc, char** argv) {
         }
 
         cout << "EPOCH [" << i << "]" << " average reward : " << (r / i) << endl;
-        //std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-        maze_mdp->reset();
+        maze_mdp.reset();
     }
     return 0;
 }
-

@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   FunctionApproximator.hpp
  * Author: xetql
  *
@@ -21,8 +21,12 @@
 
 #include "util.hpp"
 
+class FunctionApproximator{
+    virtual double get_learning_rate() const = 0;
+};
+
 template<typename TState, typename TAction>
-class ActionValueApproximator {
+class ActionValueApproximator : public FunctionApproximator{
 public:
 
     ActionValueApproximator(double _alpha, std::function< std::vector<TAction>(TState) > _available_actions) : alpha(_alpha), available_actions(_available_actions) {
@@ -60,6 +64,10 @@ public:
      * @param value
      */
     virtual void Q(TState state, TAction action, double value) = 0;
+
+    virtual double get_learning_rate() const {
+        return alpha;
+    }
 
     double alpha;
     std::function< std::vector<TAction>(TState) > available_actions;
@@ -117,7 +125,7 @@ public:
      * Get the Expected Reward for a in s.
      * @param state
      * @param action
-     * @return 
+     * @return
      */
     double Q(TState state, TAction action) {
         if (this->_Q.find(state) == this->_Q.end())
@@ -156,22 +164,29 @@ public:
 
 template<typename TState, typename TAction>
 class DoubleApproximator : public ActionValueApproximator<TState, TAction> {
-public:
+private:
+    std::shared_ptr<ArrayActionValueApproximator<TState, TAction>> qa, qb;
 
+    bool left_function_turn;
+    std::mt19937 gen;
+    std::uniform_int_distribution<> distribution;
+public:
     DoubleApproximator(
             double _alpha,
             std::function< std::vector<TAction>(TState) > _available_actions) :
-    ActionValueApproximator<TState, TAction>(_alpha, _available_actions),
-    qa(new ArrayActionValueApproximator<TState, TAction>(_alpha, _available_actions)),
-    qb(new ArrayActionValueApproximator<TState, TAction>(_alpha, _available_actions)) {
-        this->dis = std::uniform_int_distribution<>(0, 1);
+        ActionValueApproximator<TState, TAction>(_alpha, _available_actions),
+        qa(new ArrayActionValueApproximator<TState, TAction>(_alpha, _available_actions)),
+        qb(new ArrayActionValueApproximator<TState, TAction>(_alpha, _available_actions)),
+        gen((std::random_device())()) {
+        distribution = std::uniform_int_distribution<int>(0,1);
+        left_function_turn = (bool) distribution(gen);
     };
 
-    /**
-     * Get argmax_a Q(s,a), it may contains several indices
+    /***************************************************************************
+     * Get argmax Q(s,a)
      * @param state
      * @return argmax_a Q(s,a)
-     */
+     **************************************************************************/
     TAction argmax(TState state) {
         double max = this->max(state);
         std::vector<TAction> all_actions;
@@ -183,33 +198,21 @@ public:
         return *select_randomly(all_actions.begin(), all_actions.end());
     }
 
-    void approximate(TState prev_state, TAction action, TState next_state, double reward, double gamma) {
-        int updateA  = rand() % 2;
-        TAction aStar, bStar;
-        double q;
-        std::shared_ptr<ArrayActionValueApproximator<TState, TAction>>
-                leftApproximator = this->qa,
-                rightApproximator = this->qb;
-        if (updateA) {
-            aStar = leftApproximator->argmax(next_state);
-            q = leftApproximator->Q(prev_state, action);
-            leftApproximator->Q(
-                    prev_state,
-                    action,
-                    q + this->alpha * (reward + gamma * rightApproximator->Q(next_state, aStar) - q));
-        } else {
-            bStar = rightApproximator->argmax(next_state);
-            q = rightApproximator->Q(prev_state, action);
-            rightApproximator->Q(
-                    prev_state,
-                    action,
-                    q + this->alpha * (reward + gamma * leftApproximator->Q(next_state, bStar) - q));
-        }
+    /***************************************************************************
+     * Get a pair of function approximator, the first element of the pair
+     * is the approximator that will be updated in the next update
+     * and the second element is the other one.
+     * @return argmax_a Q(s,a)
+     *************************************************************************/
+    std::pair<ActionValueApproximator<TState, TAction>*, ActionValueApproximator<TState, TAction>* > get_FA_update_pair() {
+        auto update_next = left_function_turn ? this->qa : this->qb;
+        auto other = left_function_turn ? this->qb : this->qa;
+        return std::make_pair<ArrayActionValueApproximator<TState, TAction>*, ArrayActionValueApproximator<TState, TAction>*>(update_next, other);
     }
 
-    /**
+    /***************************************************************************
      * @brief Get max Q(s,a)
-     */
+     *************************************************************************/
     double max(TState state) {
         double max = std::numeric_limits<double>::lowest();
         std::vector<TAction> all_actions = this->available_actions(state);
@@ -219,37 +222,106 @@ public:
         }
         return max;
     }
-
-    double merge(double QaV, double QbV) {
-        return (QaV + QbV) / 2.0;
-    }
-
+    /**
+     * Get the merged Q values
+     * @param  state  current state
+     * @param  action action taken
+     * @return        Expected value of the action given the state
+     */
     double Q(TState state, TAction action) {
         return merge(this->qa->Q(state, action), this->qb->Q(state, action));
     }
 
-    /**
+    /***************************************************************************
      * @brief reset the function approximation
-     */
+     *************************************************************************/
     void reset() {
         this->qa->reset();
         this->qb->reset();
     }
-    std::shared_ptr<ArrayActionValueApproximator<TState, TAction>> qa, qb;
 
+    void Q(TState state, TAction action, double value) {
+        // random update
+        if(left_function_turn){
+            this->qa->Q(state, action, value);
+        } else {
+            this->qb->Q(state, action, value);
+        }
+        //select the fa to update in the next turn ...
+        left_function_turn = (bool) distribution(gen);
+    }
 protected:
+    /***************************************************************************
+     * Merging strategy
+     * @param  QaV the value of the left function approximator
+     * @param  QbV the value of the right function approximator
+     * @return     The merged values of Qa and Qb
+     ***************************************************************************/
+    double merge(double QaV, double QbV) {
+        return (QaV + QbV) / 2.0;
+    }
 
     /**
-     * Setter of the Q function
-     * @param state
-     * @param action
-     * @param value
+     * Get max_b , i.e., max value of left func approx
+     * @param  state the state from where to search
+     * @return       max_a
      */
-    void Q(TState state, TAction action, double value) {
-
+     double max_left(TState state) {
+        double max = std::numeric_limits<double>::lowest();
+        std::vector<TAction> all_actions = this->available_actions(state);
+        for (auto const &action : all_actions) {
+            if (max <= this->qa->Q(state, action))
+                max = this->qa->Q(state, action);
+        }
+        return max;
     }
-    constexpr std::mt19937 gen(std::random_device());
-    std::uniform_int_distribution<> dis;
+    /**
+     * Get max_b , i.e., max value of right func approx
+     * @param  state the state from where to search
+     * @return       max_b
+     */
+    double max_right(TState state) {
+        double max = std::numeric_limits<double>::lowest();
+        std::vector<TAction> all_actions = this->available_actions(state);
+        for (auto const &action : all_actions) {
+            if (max <= this->qb->Q(state, action))
+                max = this->qb->Q(state, action);
+        }
+        return max;
+    }
+
+    /***************************************************************************
+     * Get argmax_a Q(s,a)
+     * @param state
+     * @return argmax_a Q(s,a)
+     *************************************************************************/
+    TAction argmax_left(TState state) {
+        double max = this->max(state);
+        std::vector<TAction> all_actions;
+        for (auto const &action : this->available_actions(state)) {
+            if (max == this->qa->Q(state, action)) {
+                all_actions.push_back(action);
+            }
+        }
+        return *select_randomly(all_actions.begin(), all_actions.end());
+    }
+
+    /***************************************************************************
+     * Get argmax_b Q(s,a)
+     * @param state
+     * @return argmax_a Q(s,a)
+     *************************************************************************/
+    TAction argmax_right(TState state) {
+        double max = this->max(state);
+        std::vector<TAction> all_actions;
+        for (auto const &action : this->available_actions(state)) {
+            if (max == this->qb->Q(state, action)) {
+                all_actions.push_back(action);
+            }
+        }
+        return *select_randomly(all_actions.begin(), all_actions.end());
+    }
+
 };
 
 template<typename TState, typename TAction>
@@ -261,26 +333,6 @@ public:
 
     AfterstateValueApproximator(std::function< std::vector<TAction>(TState) > _available_actions, std::function<TState(TState, TAction) > _state_transition) : ActionValueApproximator<TState, TAction>(0.1, _available_actions), state_transition(_state_transition) {
     };
-
-    char piece_to_char(int p) {
-        switch (p) {
-            case 1:
-                return 'X';
-            case 2:
-                return 'O';
-            default:
-                return ' ';
-        }
-    }
-
-    void print_tictactoe(TState m) {
-        for (auto const &row : m) {
-            for (auto const &cell : row) {
-                std::cout << '|' << piece_to_char(cell);
-            }
-            std::cout << '|' << std::endl;
-        }
-    }
 
     /**
      * Get argmax_a Q(s,a), it may contains several indices
@@ -332,7 +384,7 @@ public:
      * Get the Expected Reward for a in s.
      * @param state
      * @param action
-     * @return 
+     * @return
      */
     double Q(TState state, TAction action) {
 
@@ -431,7 +483,7 @@ public:
     };
 
     /**
-     * There is no learning parameter when using neural network as a function 
+     * There is no learning parameter when using neural network as a function
      * approximation
      * @param alpha
      */
@@ -441,7 +493,7 @@ public:
 
     /**
      * Get argmax_a Q(s,a), it may contains several indices
-     * Query NN 
+     * Query NN
      * @param state
      * @return argmax_a Q(s,a)
      */
@@ -563,7 +615,7 @@ public:
 };
 
 template<typename TState>
-class StateValueApproximator {
+class StateValueApproximator : public FunctionApproximator{
 public:
 
     StateValueApproximator(double beta) : beta(beta) {
@@ -605,6 +657,9 @@ public:
         this->beta = beta;
     };
 
+    virtual double get_learning_rate() const {
+        return beta;
+    }
 protected:
     double beta;
 };
@@ -658,7 +713,7 @@ public:
      * Get the Expected Reward for a in s.
      * @param state
      * @param action
-     * @return 
+     * @return
      */
     double V(TState state) {
         if (this->_V.find(state) == this->_V.end())

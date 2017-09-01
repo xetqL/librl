@@ -23,16 +23,16 @@ public:
         this->temperature = this->init_temperature;
     }
 
-    std::string getName() {
+    std::string getName() const {
         return "Boltzmann Exploration";
     }
 
-    TAction choose_action(RLAgent<TState, TAction>* agent) {
+    TAction choose_action(const RLAgent<TState, TAction>* agent) const {
         TAction selectedAction = boltzmannExploration(agent, this->temperature);
         return selectedAction;
     }
 
-    std::map<TAction, double> get_probabilities(RLAgent<TState, TAction>* agent, TState state) {
+    std::map<TAction, double> get_probabilities(const RLAgent<TState, TAction>* agent, TState state) const {
         double pSIGMA = 0;
 
         std::map<TAction, double> probabilities;
@@ -56,7 +56,7 @@ public:
     }
 protected:
 
-    TAction boltzmannExploration(RLAgent<TState, TAction> *agent, double temperature) {
+    TAction boltzmannExploration(const RLAgent<TState, TAction> *agent, double temperature) const {
         std::random_device rd;
         std::mt19937 gen(rd());
         std::uniform_real_distribution<> dis(0, 1);

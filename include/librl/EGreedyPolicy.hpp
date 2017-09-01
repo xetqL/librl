@@ -13,18 +13,18 @@ public:
         this->E = E;
     }
 
-    TAction choose_action(RLAgent<TState, TAction>* agent) {
+    TAction choose_action(const RLAgent<TState, TAction>* agent) const {
         return eGreedyExploration(agent, this->E);
     }
 
-    std::string getName() {
+    std::string getName() const {
         return "E-Greedy Exploration";
     }
 
     void reset() {
     }
 
-    std::map<TAction, double> get_probabilities(RLAgent<TState, TAction>* agent, TState state) {
+    std::map<TAction, double> get_probabilities(const RLAgent<TState, TAction>* agent, TState state) const {
         std::vector<TAction> actions = agent->get_available_actions();
         double max = agent->q->max(state);
         int number_of_optimal_action = 0;
@@ -44,9 +44,9 @@ public:
     /**
      * @brief As a probability (E) of selecting the best otherwise it is random.
      * @param agent
-     * @return 
+     * @return
      */
-    TAction eGreedyExploration(RLAgent<TState, TAction>* agent, double E) {
+    TAction eGreedyExploration(const RLAgent<TState, TAction>* agent, double E) const {
         std::random_device rd;
         std::mt19937 gen(rd());
         std::uniform_real_distribution<> dis(0.0, 1.0);

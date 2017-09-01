@@ -8,13 +8,11 @@ class DoubleQLearningAgent : public RLAgent<TState, TAction> {
 public:
 
     DoubleQLearningAgent(
-            std::vector<double> params,
-            std::shared_ptr<Policy<TState, TAction>> pi,
-            std::shared_ptr<MDP<TState, TAction>> mdp,
-            std::shared_ptr<DoubleApproximator<TState, TAction>> dba)
-    : RLAgent<TState, TAction>(pi, mdp, dba) {
-        this->gamma = params[1];
-        this->alpha = params[0];
+            Policy<TState, TAction>* pi,
+            MDP<TState, TAction>* mdp,
+            DoubleApproximator<TState, TAction>* dba,
+            double discount_factor)
+    : RLAgent<TState, TAction>(pi, mdp, dba, discount_factor) {
     }
 
     /**
@@ -23,16 +21,12 @@ public:
      * @param reward the reward associated with the performed action
      */
     void learn(TState prev_state, TAction action, TState next_state, double reward) {
-        std::static_pointer_cast<DoubleApproximator<TState, TAction>>(this->q)->approximate(prev_state, action, next_state, reward, this->gamma);
-        //this->get_reinforcement(prev_state, action, next_state, reward); //Update Qa|b as a side effect
-    }   
-
-    std::string getName() {
-        return "Double Q-Learning";
+        double value = this->get_reinforcement(prev_state, action, next_state, reward);
+        this->q->Q(prev_state, action, value);
     }
 
-    double get_reinforcement(TState prev_state, TAction action, TState next_state, double reward) {
-        return 0.0;
+    std::string getName() const {
+        return "Double Q-Learning";
     }
 
     void set_learning_parameters(std::vector<double> parameters) {
@@ -46,15 +40,20 @@ public:
         this->q->reset();
     }
 
-    TAction choose_action() {
+    TAction choose_action() const {
         TAction action = this->pi->choose_action(this);
         return action;
     }
 
-private:
+protected:
 
-    double gamma;
-    double alpha;
+    double get_reinforcement(TState prev_state, TAction action, TState next_state, double reward) const {
+        auto function_approximators = std::dynamic_pointer_cast<DoubleApproximator<TState, TAction>>(this->q)->get_FA_update_pair();
+        auto fstar = function_approximators.first->argmax(next_state);
+        double q_value = function_approximators.first->Q(prev_state, action);
+        return reward + gamma * function_approximators.second->Q(next_state, fstar);
+    }
+
 };
 
 #endif // DOUBLEQLEARNING_HPP
