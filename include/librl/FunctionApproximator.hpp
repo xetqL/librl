@@ -21,7 +21,7 @@
 
 #include "util.hpp"
 
-class FunctionApproximator{
+class FunctionApproximator {
     virtual double get_learning_rate() const = 0;
 };
 
@@ -56,6 +56,10 @@ public:
 
     void set_learning_parameter(double alpha) {
         this->alpha = alpha;
+    }
+
+    virtual void set_actions_function(std::function< std::vector<TAction>(TState) > available_actions){
+        this->available_actions = available_actions;
     }
     /**
      * Setter of the Q function
@@ -182,6 +186,20 @@ public:
         left_function_turn = (bool) distribution(gen);
     };
 
+    DoubleApproximator(
+            double _alpha,
+            ActionValueApproximator<TState, TAction>* left_approximator,
+            ActionValueApproximator<TState, TAction>* right_approximator,
+            std::function< std::vector<TAction>(TState) > _available_actions) :
+        ActionValueApproximator<TState, TAction>(_alpha, _available_actions),
+        qa(left_approximator),
+        qb(right_approximator),
+        gen((std::random_device())()) {
+        left_approximator->set_actions_function(_available_actions);
+        right_approximator->set_actions_function(_available_actions);
+        distribution = std::uniform_int_distribution<int>(0,1);
+        left_function_turn = (bool) distribution(gen);
+    };
     /***************************************************************************
      * Get argmax Q(s,a)
      * @param state
@@ -238,6 +256,12 @@ public:
     void reset() {
         this->qa->reset();
         this->qb->reset();
+    }
+
+    void set_actions_function(std::function< std::vector<TAction>(TState) > available_actions){
+        this->available_actions = available_actions;
+        this->qa->set_actions_function(available_actions);
+        this->qb->set_actions_function(available_actions);
     }
 
     void Q(TState state, TAction action, double value) {
