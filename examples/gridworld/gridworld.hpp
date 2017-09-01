@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   gridworld.hpp
  * Author: xetql
  *
@@ -8,11 +8,7 @@
 #ifndef GRIDWORLD_HPP
 #define GRIDWORLD_HPP
 
-#include "../../include/librl/SarsaAgent.hpp"
-#include "../../include/librl/EGreedyPolicy.hpp"
 #include "../../include/librl/util.hpp"
-#include "../../include/librl/MDP.hpp"
-#include "../../include/librl/FunctionApproximator.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -25,7 +21,7 @@
 #include <vector>
 
 #define EMPTY    0
-#define START    1    
+#define START    1
 #define PLAYER   2
 #define OBSTACLE 3
 #define HOLE     4
@@ -158,4 +154,3 @@ void clear() {
 
 
 #endif /* GRIDWORLD_HPP */
-
