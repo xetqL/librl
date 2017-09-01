@@ -46,7 +46,6 @@ public:
 
     void set_learning_parameters(std::vector<double> parameters) {
         this->gamma = parameters[1];
-        this->alpha = parameters[0];
     }
 protected:
     double get_reinforcement(TState prev_state, TAction action, TState next_state, double reward) const {

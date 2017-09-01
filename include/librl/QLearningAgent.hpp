@@ -12,7 +12,6 @@ class QLearningAgent : public RLAgent<TState, TAction> {
 public:
 
     QLearningAgent(
-        std::vector<double> params,
         Policy<TState, TAction>* pi,
         MDP<TState, TAction>* mdp,
         ActionValueApproximator<TState, TAction>* ava,
@@ -40,7 +39,6 @@ public:
 
     void set_learning_parameters(std::vector<double> parameters) {
         this->gamma = parameters[1];
-        this->alpha = parameters[0];
     }
 
     /**

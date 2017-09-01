@@ -71,53 +71,57 @@ int main(int argc, char** argv) {
         {PLAYER, HOLE, HOLE, HOLE, HOLE, HOLE, HOLE, STOP},
     };
 
-
+    // Create your Markov Decision Process from your:
+    // S: The set of States (can be a function returning an empty vector)
+    // A: The set of Actions for each State
+    // R: The reward function for taking Action a in State s
+    // T: The transition function
+    // entry_state: The initial state of your system.
     MDP<Maze, Move> maze_mdp = MDP<Maze, Move >(S, A, R, T, entry_state);
-    // e-Greedy exploration policy
-    EGreedyPolicy<Maze, Move> policy_egreedy = EGreedyPolicy<Maze, Move > (0.1);
-    //  Greedy exploration policy
-    GreedyPolicy<Maze, Move> policy_greedy = GreedyPolicy<Maze, Move> ();
-    // Action value approximator that uses an array
-    ArrayActionValueApproximator<Maze, Move> afa = ArrayActionValueApproximator<Maze, Move > (0.3, A);
-    // Action value approximator that uses an array
-    DoubleApproximator<Maze, Move> dblfa = DoubleApproximator<Maze, Move > (0.3, A);
-    // Action value approximator that uses an array
-    ArrayStateValueApproximator <Maze> sfa =  ArrayStateValueApproximator<Maze> (0.3);
 
-    // Sarsa RL agent
+    // Create the exploration policy your agent will follow
+    EGreedyPolicy<Maze, Move> policy_egreedy = EGreedyPolicy<Maze, Move > (0.1);
+
+    // Maybe another...
+    GreedyPolicy<Maze, Move> policy_greedy = GreedyPolicy<Maze, Move> ();
+
+    // Create the function approximator your agent will use to approximate Q(s,a)
+    ArrayActionValueApproximator<Maze, Move> afa = ArrayActionValueApproximator<Maze, Move > (0.3, A);
+
+    // Create your Reinforcement Learning agent ...
     std::shared_ptr<RLAgent<Maze, Move >> player(
-        ReinforcementLearningAgentFactory<Maze, Move>::get_instance("qlearning", 0.9, &policy_egreedy, &maze_mdp, &afa, &sfa)
+        ReinforcementLearningAgentFactory<Maze, Move>::get_instance("qlearning", 0.9, &policy_egreedy, &maze_mdp, &afa)
     );
-    
+
+    // Let's play with the gridworld example !
     const int START_SHOW = 750;
     const int RESTART_AFTER = 100000;
-    int LEARNING_ITERATIONS = 1100;
+    const int LEARNING_ITERATIONS = 1100;
     double r = 0.0;
     for (size_t i = 0; i < LEARNING_ITERATIONS; ++i) {
-
         if (i >= START_SHOW) {
             print_maze(maze_mdp.current_state);
             player->set_behavioral_policy(&policy_greedy);
+            std::this_thread::sleep_for(std::chrono::milliseconds(250));
         }
-
-        if (i > START_SHOW) std::this_thread::sleep_for(std::chrono::milliseconds(250));
-
         int trial = 0;
-
         while (trial < RESTART_AFTER) {
             if (i >= START_SHOW) clear();
+            // Select an action
             auto sel_a = player->choose_action();
+            // Get the reward for that action
             double reward = maze_mdp.get_reward(sel_a);
-            pair<Maze, Maze> prev_next_states = maze_mdp.perform_state_transition(sel_a);
+            // Perform the state transition
+            auto prev_next_states = maze_mdp.perform_state_transition(sel_a);
             if (i >= START_SHOW) print_maze(prev_next_states.second);
+            // Learn this action
             player->learn(prev_next_states.first, sel_a, prev_next_states.second, reward);
             r += reward;
+            //if entered into pit or win then break.
             if (reward != -1.0) break;
             if (i >= START_SHOW) std::this_thread::sleep_for(std::chrono::milliseconds(250));
             trial++;
-            //cout << "NN MSE: " << fa->net.get_MSE() << endl;
         }
-
         cout << "EPOCH [" << i << "]" << " average reward : " << (r / i) << endl;
         maze_mdp.reset();
     }
