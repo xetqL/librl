@@ -1,5 +1,5 @@
 # C++ Reinforcement Learning Library for Decision Making Under Uncertainty: librl 
----
+
 ## Description
 librl is a C++ header-only library for decision making under uncertainty via Reinforcement Learning. 
 
