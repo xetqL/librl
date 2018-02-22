@@ -18,6 +18,8 @@ set(INCLUDES_INSTALL_DIRECTORY /usr/include/librl)
 
 add_library(rl INTERFACE)
 
+target_link_libraries(rl INTERFACE libboost)
+
 install(DIRECTORY includes/
         DESTINATION /usr/include/
         FILES_MATCHING PATTERN "*.hpp"

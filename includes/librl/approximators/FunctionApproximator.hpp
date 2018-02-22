@@ -76,10 +76,10 @@ namespace librl{ namespace approximator {
         class ArrayActionValueApproximator : public ActionValueApproximator<TState, TAction> {
         public:
 
-            ArrayActionValueApproximator(double _alpha, double default_value=0.0) : ActionValueApproximator<TState, TAction>(_alpha) {};
+            ArrayActionValueApproximator(double _alpha, double default_value=0.0) : ActionValueApproximator<TState, TAction>(_alpha), default_value(default_value) {};
 
             TAction argmax(const TState state, std::vector<TAction> available_actions = std::vector<TAction>()) const {
-                double max = this->max(state);
+                double max = std::numeric_limits<double>::lowest();
                 std::vector <TAction> all_actions;
                 if(this->_Q.find(state) == this->_Q.end()) { //state have never been seen -> available action should help
                     if(available_actions.size() == 0) throw std::runtime_error("State has never been seen and no available action is given... in FunctionApproximator.hpp");
@@ -89,12 +89,17 @@ namespace librl{ namespace approximator {
                     auto state_map = this->_Q.at(state);
                     std::for_each(state_map.begin(), state_map.end(), [&](const auto& pair) mutable {available_actions.push_back(pair.first);});
                 }
+
                 if(this->_Q.find(state) != this->_Q.end()){
                     for(auto const &action : available_actions) { //go through actions
                         auto action_it = this->_Q.at(state).find(action);
-                        if (action_it != this->_Q.at(state).end()){
-                            if(max == action_it->second)
-                                all_actions.push_back(action);
+                        double action_value = action_it != this->_Q.at(state).end() ? action_it->second : default_value;
+                        if(max == action_value)
+                            all_actions.push_back(action);
+                        else if(max < action_value){
+                            max = action_value;
+                            all_actions.clear();
+                            all_actions.push_back(action);
                         }
                     }
                     return *select_randomly(all_actions.begin(), all_actions.end());
@@ -108,16 +113,15 @@ namespace librl{ namespace approximator {
              */
             double max(TState state) const {
                 double max = std::numeric_limits<double>::lowest();
-                if(this->_Q.find(state) == this->_Q.end()) return 0.0;
-                if(this->_Q.at(state).size() == 0) return 0.0;
-
+                if(this->_Q.find(state) == this->_Q.end()) return default_value;
+                if(this->_Q.at(state).size() == 0) return default_value;
 
                 for(auto const &action_value : this->_Q.at(state)){ //go through actions
                     double qv = action_value.second;
                     if (max <= qv) max = qv;
                 }
 
-                return max == std::numeric_limits<double>::lowest() ? 0.0 : max;
+                return max == std::numeric_limits<double>::lowest() ? default_value : max;
             }
 
             /**

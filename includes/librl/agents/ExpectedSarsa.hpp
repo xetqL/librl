@@ -1,28 +1,21 @@
-#ifndef QVLEARNINGAGENT_HPP
-#define QVLEARNINGAGENT_HPP
-
-#include "../approximators/FunctionApproximator.hpp"
+#ifndef EXPECTEDSARSAAGENT_HPP
+#define EXPECTEDSARSAAGENT_HPP
 
 #include "RLAgent.hpp" // Base class: RLAgent
+#include "../utils/array.hpp"
 
-#include <map>
 namespace librl { namespace agent {
 
         template<typename TState, typename TAction>
-        class QVLearningAgent : public RLAgent<TState, TAction> {
+        class ExpectedSarsa : public RLAgent<TState, TAction> {
         public:
 
-            QVLearningAgent(
+            ExpectedSarsa(
                     librl::policy::Policy<TState, TAction> *pi,
                     librl::environment::MDP<TState, TAction> *mdp,
                     librl::approximator::ActionValueApproximator<TState, TAction> *ava,
-                    librl::approximator::StateValueApproximator<TState> *sva,
                     double discount_factor)
-                    : RLAgent<TState, TAction>(pi, mdp, ava, discount_factor), v(sva) {
-            }
-
-            std::string getName() const {
-                return "QVLearning";
+                    : RLAgent<TState, TAction>(pi, mdp, ava, discount_factor) {
             }
 
             /**
@@ -39,29 +32,33 @@ namespace librl { namespace agent {
              * @param reward the reward associated with the performed action
              */
             void learn(TState prev_state, TAction action, TState next_state, double reward) {
-                //learn the previous state value via V
-                this->v->V(prev_state, this->get_reinforcement(prev_state, action, next_state, reward));
-                //learn the previous action value via Q
-                this->q->Q(prev_state, action, this->get_reinforcement(prev_state, action, next_state, reward));
+                double value = this->get_reinforcement(prev_state, action, next_state, reward);
+                this->q->Q(prev_state, action, value);
+            }
+
+            std::string getName() const {
+                return "Expected Sarsa";
             }
 
             void reset() {
                 this->stats = std::make_shared<librl::stats::AgentStatistics>();
                 this->pi->reset();
+                this->q->reset();
             }
 
             void set_learning_parameters(std::vector<double> parameters) {
                 this->gamma = parameters[1];
-                this->q->set_learning_parameter(parameters[0]);
-                this->v->set_learning_parameter(parameters[2]);
             }
 
         protected:
             double get_reinforcement(TState prev_state, TAction action, TState next_state, double reward) const {
-                return reward + this->gamma * this->v->V(next_state);
+                double Vs = 0;
+                std::unordered_map<TAction, double> probabilities = this->pi->get_probabilities(this->q, this->get_available_actions(), next_state);
+                for (auto const &actionProbabilities : probabilities) { //Weighted E(a | s)
+                    Vs += actionProbabilities.second * this->q->Q(next_state, actionProbabilities.first);
+                }
+                return reward + this->gamma * Vs;
             }
-
-            librl::approximator::StateValueApproximator<TState> *v;
         };
     }}
-#endif // QVLEARNINGAGENT_HPP
+#endif // EXPECTEDSARSAAGENT_HPP

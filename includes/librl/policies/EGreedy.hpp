@@ -1,17 +1,17 @@
 #ifndef EGREEDYPOLICY_HPP
 #define EGREEDYPOLICY_HPP
 #include "Policy.hpp"
-#include "GreedyPolicy.hpp"
+#include "Greedy.hpp"
 #include "../utils/util.hpp"
 #include <vector>
 #include "../agents/RLAgent.hpp"
 namespace librl { namespace policy {
 
         template<typename TState, typename TAction>
-        class EGreedyPolicy : public Policy<TState, TAction> {
+        class EGreedy : public Policy<TState, TAction> {
         public:
 
-            EGreedyPolicy(double E) {
+            EGreedy(double E) {
                 this->E = E;
             }
 
@@ -27,7 +27,7 @@ namespace librl { namespace policy {
 
             void reset() {}
 
-            virtual std::map<TAction, double> get_probabilities(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+            virtual std::unordered_map<TAction, double> get_probabilities(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
                                                                 const std::vector<TAction> &available_actions,
                                                                 const TState &at_state) const {
                 double max = f->max(at_state);
@@ -36,7 +36,7 @@ namespace librl { namespace policy {
                 for (auto const &action : available_actions)
                     if (f->Q(at_state, action) == max) number_of_optimal_action++;
 
-                std::map<TAction, double> probabilities;
+                std::unordered_map<TAction, double> probabilities;
                 for (auto const &action : available_actions) {
                     probabilities[action] = f->Q(at_state, action) == max ? (1 - E) / ((double) number_of_optimal_action) : E / ((double) available_actions.size() - number_of_optimal_action);
                 }
@@ -61,7 +61,7 @@ namespace librl { namespace policy {
             }
 
         protected:
-            GreedyPolicy<TState, TAction> g;
+            Greedy<TState, TAction> g;
             double E;
         };
     }}

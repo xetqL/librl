@@ -7,7 +7,7 @@
 
 namespace librl { namespace policy {
     template<typename TState, typename TAction>
-    class UCB1Policy : public Policy<TState, TAction> {
+    class UCB1 : public Policy<TState, TAction> {
     public:
 
         virtual TAction choose_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
@@ -27,7 +27,7 @@ namespace librl { namespace policy {
             this->numberOfTimeAction.clear();
         }
 
-        virtual std::map<TAction, double> get_probabilities(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+        virtual std::unordered_map<TAction, double> get_probabilities(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
                                                             const std::vector<TAction> &available_actions,
                                                             const TState &at_state) const {
             const int nb_actions = available_actions.size();

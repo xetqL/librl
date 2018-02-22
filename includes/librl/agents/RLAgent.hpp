@@ -93,6 +93,9 @@ public:
     std::vector<TAction> get_available_actions() const {
         return this->mdp->get_available_actions();
     }
+
+    const librl::policy::Policy<TState, TAction>* get_policy() { return this->pi; };
+
     std::shared_ptr<librl::stats::AgentStatistics> stats;
     librl::approximator::ActionValueApproximator<TState, TAction>* q;
 protected:

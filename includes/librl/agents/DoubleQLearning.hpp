@@ -5,10 +5,10 @@
 namespace librl { namespace agent {
 
         template<typename TState, typename TAction>
-        class DoubleQLearningAgent : public RLAgent<TState, TAction> {
+        class DoubleQLearning : public RLAgent<TState, TAction> {
         public:
 
-            DoubleQLearningAgent(
+            DoubleQLearning(
                     librl::policy::Policy<TState, TAction> *pi,
                     librl::environment::MDP<TState, TAction> *mdp,
                     librl::approximator::DoubleApproximator<TState, TAction> *dba,

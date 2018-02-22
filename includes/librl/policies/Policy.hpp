@@ -1,6 +1,6 @@
 #ifndef POLICY_HPP
 #define POLICY_HPP
-#include <map>
+#include <unordered_map>
 #include <string>
 #include <limits>
 #include <queue>
@@ -12,7 +12,7 @@ namespace librl { namespace policy {
         template<typename TState, typename TAction>
         class Policy {
         public:
-            virtual std::map<TAction, double>
+            virtual std::unordered_map<TAction, double>
             get_probabilities(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
                               const std::vector<TAction> &available_actions,
                               const TState &at_state) const = 0;
@@ -29,6 +29,5 @@ namespace librl { namespace policy {
 
             virtual std::string to_string() { return ""; };
         };
-
-    }}
+}}
 #endif // POLICY_HPP

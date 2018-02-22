@@ -1,18 +1,18 @@
 #ifndef RLALGORITHMS_HPP
 #define RLALGORITHMS_HPP
 
-#include "DoubleQLearningAgent.hpp"
-#include "QLearningAgent.hpp"
-#include "SarsaAgent.hpp"
-#include "ExpectedSarsaAgent.hpp"
-#include "QVLearningAgent.hpp"
+#include "DoubleQLearning.hpp"
+#include "QLearning.hpp"
+#include "Sarsa.hpp"
+#include "ExpectedSarsa.hpp"
+#include "QVLearning.hpp"
 
 #include <memory>
 #include <vector>
 #include <exception>
 namespace librl { namespace agent {
     template<typename State, typename Action>
-    class ReinforcementLearningAgentFactory
+    class RLAgentFactory
     {
     public:
         static std::unique_ptr<RLAgent<State, Action>>
@@ -22,11 +22,11 @@ namespace librl { namespace agent {
                      librl::environment::MDP<State, Action>* mdp,
                      librl::approximator::ActionValueApproximator<State,Action>* fa) {
             if (!algorithm_name.compare("qlearning")) {
-                return std::move(std::make_unique<QLearningAgent<State, Action>>(policy, mdp, fa, discount_factor));
+                return std::move(std::make_unique<QLearning<State, Action>>(policy, mdp, fa, discount_factor));
             } else if (!algorithm_name.compare("sarsa")) {
-                return std::move(std::make_unique<SarsaAgent<State, Action>>(policy, mdp, fa, discount_factor));
+                return std::move(std::make_unique<Sarsa<State, Action>>(policy, mdp, fa, discount_factor));
             } else if (!algorithm_name.compare("expected-sarsa")) {
-                return std::move(std::make_unique<ExpectedSarsaAgent<State, Action>>(policy, mdp, fa, discount_factor));
+                return std::move(std::make_unique<ExpectedSarsa<State, Action>>(policy, mdp, fa, discount_factor));
             } else {
                 std::cerr << "This RL algorithm does not work with action value function approximator" << std::endl;
             }
@@ -40,10 +40,10 @@ namespace librl { namespace agent {
                      librl::environment::MDP<State, Action>* mdp,
                      librl::approximator::DoubleApproximator<State, Action>* fa){
             if (!algorithm_name.compare("double-qlearning")) {
-                return std::move(std::make_unique<DoubleQLearningAgent<State, Action>>(policy, mdp, fa, discount_factor));
+                return std::move(std::make_unique<DoubleQLearning<State, Action>>(policy, mdp, fa, discount_factor));
             } else {
                 librl::approximator::ActionValueApproximator<State, Action>* generic_fa = fa;
-                return ReinforcementLearningAgentFactory::get_instance(algorithm_name, discount_factor, policy, mdp, generic_fa);
+                return RLAgentFactory::get_instance(algorithm_name, discount_factor, policy, mdp, generic_fa);
             }
         }
 
@@ -55,7 +55,7 @@ namespace librl { namespace agent {
                      librl::approximator::ActionValueApproximator<State,Action>* fa,
                      librl::approximator::StateValueApproximator<State>* sfa){
             if (!algorithm_name.compare("qvlearning")) {
-                return std::move(std::make_unique<QVLearningAgent<State, Action>>(policy, mdp, fa, sfa, discount_factor));
+                return std::move(std::make_unique<QVLearning<State, Action>>(policy, mdp, fa, sfa, discount_factor));
             } else {
                 std::cerr << "This RL algorithm does not work with state value function approximator" << std::endl;
             }

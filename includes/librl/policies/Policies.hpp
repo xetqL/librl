@@ -2,9 +2,12 @@
 #define POLICIES_HPP
 
 #include "Policy.hpp"
-#include "GreedyPolicy.hpp"
-#include "EGreedyPolicy.hpp"
-#include "UCB1Policy.hpp"
-#include "BoltzmannPolicy.hpp"
+#include "Greedy.hpp"
+#include "EGreedy.hpp"
+#include "UCB1.hpp"
+#include "Boltzmann.hpp"
+#include "Layered.hpp"
+#include "RoundRobin.hpp"
+#include "SoftRoundRobin.hpp"
 
 #endif

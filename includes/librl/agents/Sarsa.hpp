@@ -1,23 +1,23 @@
-#ifndef QLEARNING_AGENT
-#define QLEARNING_AGENT
+#ifndef SARSAAGENT_HPP
+#define SARSAAGENT_HPP
 
-#include "RLAgent.hpp"
-#include "../approximators/FunctionApproximator.hpp"
-#include <iostream>
-#include <limits>
-#include <map>
+#include "RLAgent.hpp" // Base class: RLAgent
 namespace librl { namespace agent {
 
         template<typename TState, typename TAction>
-        class QLearningAgent : public RLAgent<TState, TAction> {
+        class Sarsa : public RLAgent<TState, TAction> {
         public:
 
-            QLearningAgent(
+            Sarsa(
                     librl::policy::Policy<TState, TAction> *pi,
                     librl::environment::MDP<TState, TAction> *mdp,
                     librl::approximator::ActionValueApproximator<TState, TAction> *ava,
                     double discount_factor)
                     : RLAgent<TState, TAction>(pi, mdp, ava, discount_factor) {
+            }
+
+            std::string getName() const {
+                return "Sarsa";
             }
 
             /**
@@ -29,11 +29,19 @@ namespace librl { namespace agent {
                 return action;
             }
 
-            std::string getName() const {
-                return "QLearning";
+            /**
+             * @brief Method for telling the agent that the performed action is terminated
+             * @param action the id of the performed action
+             * @param reward the reward associated with the performed action
+             */
+            void learn(TState prev_state, TAction action, TState next_state, double reward) {
+                double value = this->get_reinforcement(prev_state, action, next_state,
+                                                       reward); //side effect : change the current state due to sarsa and set the next action
+                this->q->Q(prev_state, action, value);
             }
 
             void reset() {
+                this->stats = std::make_shared<librl::stats::AgentStatistics>();
                 this->pi->reset();
                 this->q->reset();
             }
@@ -42,20 +50,12 @@ namespace librl { namespace agent {
                 this->gamma = parameters[1];
             }
 
-            /**
-             * @brief Method for telling the agent that the performed action is terminated
-             * @param action the id of the performed action
-             * @param reward the reward associated with the performed action
-             */
-            void learn(TState prev_state, TAction action, TState next_state, double reward) {
-                double value = this->get_reinforcement(prev_state, action, next_state, reward);
-                this->q->Q(prev_state, action, value);
-            }
-
         protected:
             double get_reinforcement(TState prev_state, TAction action, TState next_state, double reward) const {
-                return reward + this->gamma * this->q->max(next_state);
+                TAction futureAction = this->pi->choose_action(this->q, this->get_available_actions(), next_state);
+                return reward + this->gamma * this->q->Q(next_state, futureAction);
             }
+
         };
     }}
-#endif
+#endif // SARSAAGENT_HPP

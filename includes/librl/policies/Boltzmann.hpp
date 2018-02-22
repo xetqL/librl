@@ -1,23 +1,23 @@
 #ifndef BOLTZMANNPOLICY_HPP
 #define BOLTZMANNPOLICY_HPP
 #include "Policy.hpp"
-#include "GreedyPolicy.hpp"
+#include "Greedy.hpp"
 #include <iostream>
 #include <string>
 #include "../agents/RLAgent.hpp"
 namespace librl { namespace policy {
 
         template<typename TState, typename TAction>
-        class BoltzmannPolicy : public Policy<TState, TAction> {
+        class Boltzmann : public Policy<TState, TAction> {
         public:
 
-            BoltzmannPolicy(double temperature, double coolingFactor) : gen((std::random_device())()), dis(0.0, 1.0) {
+            Boltzmann(double temperature, double coolingFactor) : gen((std::random_device())()), dis(0.0, 1.0) {
                 this->init_temperature = temperature;
                 this->temperature = temperature;
                 this->coolingFactor = coolingFactor;
             }
 
-            void update() override {
+            void update() {
                 this->temperature = this->temperature * (1 - this->coolingFactor);
             }
 
@@ -36,12 +36,12 @@ namespace librl { namespace policy {
                 return selectedAction;
             }
 
-            virtual std::map<TAction, double> get_probabilities(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+            virtual std::unordered_map<TAction, double> get_probabilities(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
                                                                 const std::vector<TAction> &available_actions,
                                                                 const TState &at_state) const {
                 double pSIGMA = 0;
 
-                std::map<TAction, double> probabilities;
+                std::unordered_map<TAction, double> probabilities;
                 const double actual_temp = this->temperature;
 
                 for (auto const &action : available_actions) {
@@ -50,7 +50,7 @@ namespace librl { namespace policy {
 
                 //exploitation
                 if (!std::isfinite(pSIGMA) || pSIGMA != pSIGMA || pSIGMA == 0) {
-                    return BoltzmannPolicy::greedy_policy.get_probabilities(f, available_actions, at_state);
+                    return Boltzmann::greedy_policy.get_probabilities(f, available_actions, at_state);
                 } else {//otherwise, exploration
                     for (auto const &action : available_actions) {
                         probabilities[action] = std::exp(f->Q(at_state, action) / actual_temp) / pSIGMA;
@@ -60,7 +60,7 @@ namespace librl { namespace policy {
             }
 
         protected:
-            static GreedyPolicy<TState, TAction> greedy_policy;
+            Greedy<TState, TAction> greedy_policy;
             std::mt19937 gen;
             std::uniform_real_distribution<double> dis;
             double init_temperature;
@@ -80,7 +80,7 @@ namespace librl { namespace policy {
                 }
                 TAction selected_action;
                 if (!std::isfinite(pSIGMA) || pSIGMA != pSIGMA || pSIGMA == 0) {
-                    selected_action = BoltzmannPolicy::greedy_policy.choose_action(f, available_actions, at_state);
+                    selected_action = Boltzmann::greedy_policy.choose_action(f, available_actions, at_state);
                 } else {
                     for (auto const &action : available_actions) {
                         p = std::exp(f->Q(at_state, action) / actual_temp) / pSIGMA;
