@@ -11,10 +11,9 @@ namespace librl { namespace agent {
 
             Sarsa(
                     librl::policy::Policy<TState, TAction> *pi,
-                    librl::environment::MDP<TState, TAction> *mdp,
                     librl::approximator::ActionValueApproximator<TState, TAction> *ava,
                     double discount_factor)
-                    : RLAgent<TState, TAction>(pi, mdp, ava, discount_factor) {
+                    : RLAgent<TState, TAction>(pi, ava, discount_factor) {
             }
 
             /**
@@ -52,8 +51,8 @@ namespace librl { namespace agent {
                 return reward + this->gamma * this->q->Q(next_state, future_action);
             }
 
-            TState state;
-            std::vector<TAction> actions;
+            TState current_state;
+            std::vector<TAction> current_actions;
         };
     }}
 #endif // SARSAAGENT_HPP

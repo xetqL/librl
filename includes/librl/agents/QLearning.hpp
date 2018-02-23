@@ -15,10 +15,9 @@ namespace librl { namespace agent {
 
             QLearning(
                     librl::policy::Policy<TState, TAction> *pi,
-                    librl::environment::MDP<TState, TAction> *mdp,
                     librl::approximator::ActionValueApproximator<TState, TAction> *ava,
                     double discount_factor)
-                    : RLAgent<TState, TAction>(pi, mdp, ava, discount_factor) {
+                    : RLAgent<TState, TAction>(pi, ava, discount_factor) {
             }
 
             /**

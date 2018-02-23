@@ -19,14 +19,13 @@ namespace librl { namespace agent {
         get_instance(std::string algorithm_name,
                      double discount_factor,
                      librl::policy::Policy<State, Action>* policy,
-                     librl::environment::MDP<State, Action>* mdp,
                      librl::approximator::ActionValueApproximator<State,Action>* fa) {
             if (!algorithm_name.compare("qlearning")) {
-                return std::move(std::make_unique<QLearning<State, Action>>(policy, mdp, fa, discount_factor));
+                return std::move(std::make_unique<QLearning<State, Action>>(policy, fa, discount_factor));
             } else if (!algorithm_name.compare("sarsa")) {
-                return std::move(std::make_unique<Sarsa<State, Action>>(policy, mdp, fa, discount_factor));
+                return std::move(std::make_unique<Sarsa<State, Action>>(policy, fa, discount_factor));
             } else if (!algorithm_name.compare("expected-sarsa")) {
-                return std::move(std::make_unique<ExpectedSarsa<State, Action>>(policy, mdp, fa, discount_factor));
+                return std::move(std::make_unique<ExpectedSarsa<State, Action>>(policy, fa, discount_factor));
             } else {
                 std::cerr << "This RL algorithm does not work with action value function approximator" << std::endl;
             }
@@ -37,13 +36,12 @@ namespace librl { namespace agent {
         get_instance(std::string algorithm_name,
                      double discount_factor,
                      librl::policy::Policy<State, Action>* policy,
-                     librl::environment::MDP<State, Action>* mdp,
                      librl::approximator::DoubleApproximator<State, Action>* fa){
             if (!algorithm_name.compare("double-qlearning")) {
-                return std::move(std::make_unique<DoubleQLearning<State, Action>>(policy, mdp, fa, discount_factor));
+                return std::move(std::make_unique<DoubleQLearning<State, Action>>(policy, fa, discount_factor));
             } else {
                 librl::approximator::ActionValueApproximator<State, Action>* generic_fa = fa;
-                return RLAgentFactory::get_instance(algorithm_name, discount_factor, policy, mdp, generic_fa);
+                return RLAgentFactory::get_instance(algorithm_name, discount_factor, policy, generic_fa);
             }
         }
 
@@ -51,16 +49,15 @@ namespace librl { namespace agent {
         get_instance(std::string algorithm_name,
                      double discount_factor,
                      librl::policy::Policy<State, Action>* policy,
-                     librl::environment::MDP<State, Action>* mdp,
                      librl::approximator::ActionValueApproximator<State,Action>* fa,
                      librl::approximator::StateValueApproximator<State>* sfa){
             if (!algorithm_name.compare("qvlearning")) {
-                return std::move(std::make_unique<QVLearning<State, Action>>(policy, mdp, fa, sfa, discount_factor));
+                return std::move(std::make_unique<QVLearning<State, Action>>(policy, fa, sfa, discount_factor));
             } else {
                 std::cerr << "This RL algorithm does not work with state value function approximator" << std::endl;
             }
             throw new std::invalid_argument("Not a valid algorithm/parameters combination.");
         }
     };
-    }}
+}}
 #endif

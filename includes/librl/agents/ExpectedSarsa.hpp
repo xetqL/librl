@@ -13,10 +13,9 @@ namespace librl { namespace agent {
 
             ExpectedSarsa(
                     librl::policy::Policy<TState, TAction> *pi,
-                    librl::environment::MDP<TState, TAction> *mdp,
                     librl::approximator::ActionValueApproximator<TState, TAction> *ava,
                     double discount_factor)
-                    : RLAgent<TState, TAction>(pi, mdp, ava, discount_factor) {
+                    : RLAgent<TState, TAction>(pi, ava, discount_factor) {
             }
 
             TAction choose_action(const TState& state, const std::vector<TAction>& actions) {
@@ -42,7 +41,7 @@ namespace librl { namespace agent {
         protected:
             double get_reinforcement(TState prev_state, TAction action, TState next_state, double reward) const {
                 double Vs = 0;
-                std::unordered_map<TAction, double> probabilities = this->pi->get_probabilities(this->q, current_actions, next_state);
+                auto probabilities = this->pi->get_probabilities(this->q, current_actions, next_state);
                 for (auto const &actionProbabilities : probabilities) { //Weighted E(a | s)
                     Vs += actionProbabilities.second * this->q->Q(next_state, actionProbabilities.first);
                 }

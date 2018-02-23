@@ -17,8 +17,9 @@
 #include <random>
 
 #include "../utils/util.hpp"
-#include <armadillo>
+
 namespace librl{ namespace approximator {
+
         class FunctionApproximator {
             virtual double get_learning_rate() const = 0;
         };
@@ -659,7 +660,7 @@ namespace librl{ namespace approximator {
                 this->_V.clear();
             }
 
-            std::map<TState, double> _V;
+            std::unordered_map<TState, double> _V;
         };
 }}
 #endif /* FUNCTIONAPPROXIMATOR_HPP */

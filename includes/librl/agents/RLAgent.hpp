@@ -27,19 +27,15 @@ public:
      * @param explTechnique Specifiy the function that selects the next Action following a given policy
      */
      RLAgent(librl::policy::Policy<TState, TAction>* pi,
-             librl::environment::MDP<TState, TAction>* mdp,
              librl::approximator::ActionValueApproximator<TState, TAction>* fa,
              double discount_factor) :
              q(fa),
              pi(pi),
-             mdp(mdp),
              gamma(discount_factor) {}
 
     void set_behavioral_policy(librl::policy::Policy<TState, TAction>* pi) { this->pi = pi; }
 
     virtual TAction choose_action(const TState& state, const std::vector<TAction>& actions) = 0;
-    virtual TAction choose_action(const std::vector<TAction>& actions) { return this->choose_action(this->mdp->current_state, actions); }
-    virtual TAction choose_action() { return this->choose_action(this->mdp->get_available_actions()); }
 
     /**
      * Reward the agent for the action A taken in state S leading to state S'. Should only be used
@@ -52,14 +48,9 @@ public:
      */
     virtual void learn(TState prev_state, TAction action, TState next_state, double reward) = 0;
 
-    /**
-     * @brief Setter for the learning parameters (alpha, beta, gamma etc.)
-     */
     virtual void set_learning_parameters(std::vector<double> parameters) = 0;
 
     virtual void notify() const { pi->update(); }
-
-    std::vector<TAction> get_available_actions() const { return this->mdp->get_available_actions(); }
 
     const librl::policy::Policy<TState, TAction>* get_policy() { return this->pi; };
 
@@ -75,8 +66,6 @@ protected:
 
     librl::approximator::ActionValueApproximator<TState, TAction>* q;
     librl::policy::Policy<TState, TAction>* pi;
-    librl::environment::MDP<TState, TAction>* mdp;
-
     double gamma;
 };
 }}

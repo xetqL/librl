@@ -17,12 +17,12 @@ namespace librl { namespace policy {
 
     template<typename TState, typename TAction>
     class Layered : public Policy<TState, TAction> {
-
+        using DurationType  = unsigned long int;
         using PtrLayerTypes = std::shared_ptr<Policy<TState, TAction>>;
-        std::deque< std::pair<PtrLayerTypes, unsigned long int> > layers;
+        std::deque< std::pair<PtrLayerTypes, DurationType> > layers;
 
     public:
-        template <template<class _TState, class _TAction> class LayerType, unsigned long int duration, class... Args>
+        template <template<class _TState, class _TAction> class LayerType, DurationType duration, class... Args>
         void add(Args... args) {
             layers.push_back(std::make_pair(std::make_shared< LayerType<TState, TAction> >(args...), duration));
         }
@@ -30,7 +30,7 @@ namespace librl { namespace policy {
         template <template<class _TState, class _TAction> class LayerType, class... Args> //by default a layer is executed infinitely
         void add(Args... args) {
             layers.push_back(std::make_pair(std::make_shared< LayerType<TState, TAction> >(args...),
-                                            std::numeric_limits<unsigned long int>::max()));
+                                            std::numeric_limits<DurationType>::max()));
         }
 
         virtual TAction choose_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
