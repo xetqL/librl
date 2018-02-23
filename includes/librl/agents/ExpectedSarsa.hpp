@@ -19,19 +19,12 @@ namespace librl { namespace agent {
                     : RLAgent<TState, TAction>(pi, mdp, ava, discount_factor) {
             }
 
-            /**
-             * @brief Method for asking the RL agent to starting to perform an action
-             * @return Gives the id of the action to perform
-             */
-            TAction choose_action(const std::vector<TAction>& actions) const {
-                return this->pi->choose_action(this->q, actions, this->current_state());
+            TAction choose_action(const TState& state, const std::vector<TAction>& actions) {
+                this->current_state = state;
+                this->current_actions = actions;
+                return this->pi->choose_action(this->q, actions, state);
             }
 
-            /**
-             * @brief Method for telling the agent that the performed action is terminated
-             * @param action the id of the performed action
-             * @param reward the reward associated with the performed action
-             */
             void learn(TState prev_state, TAction action, TState next_state, double reward) {
                 double value = this->get_reinforcement(prev_state, action, next_state, reward);
                 this->q->Q(prev_state, action, value);
@@ -49,12 +42,15 @@ namespace librl { namespace agent {
         protected:
             double get_reinforcement(TState prev_state, TAction action, TState next_state, double reward) const {
                 double Vs = 0;
-                std::unordered_map<TAction, double> probabilities = this->pi->get_probabilities(this->q, this->get_available_actions(), next_state);
+                std::unordered_map<TAction, double> probabilities = this->pi->get_probabilities(this->q, current_actions, next_state);
                 for (auto const &actionProbabilities : probabilities) { //Weighted E(a | s)
                     Vs += actionProbabilities.second * this->q->Q(next_state, actionProbabilities.first);
                 }
                 return reward + this->gamma * Vs;
             }
+        private:
+            TState current_state;
+            std::vector<TAction> current_actions;
         };
     }}
 #endif // EXPECTEDSARSAAGENT_HPP

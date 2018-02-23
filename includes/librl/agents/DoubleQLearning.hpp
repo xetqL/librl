@@ -37,8 +37,8 @@ namespace librl { namespace agent {
                 this->q->reset();
             }
 
-            TAction choose_action(const std::vector<TAction>& actions) const {
-                TAction action = this->pi->choose_action(this->q, actions, this->current_state());
+            TAction choose_action(const TState& state, const std::vector<TAction>& actions) {
+                TAction action = this->pi->choose_action(this->q, actions, state);
                 return action;
             }
 

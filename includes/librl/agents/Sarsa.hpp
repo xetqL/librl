@@ -21,9 +21,10 @@ namespace librl { namespace agent {
              * @brief Method for asking the RL agent to starting to perform an action
              * @return Gives the id of the action to perform
              */
-            virtual TAction choose_action(const std::vector<TAction>& actions) const{
-                TAction action = this->pi->choose_action(this->q, actions, this->current_state());
-                return action;
+            TAction choose_action(const TState& state, const std::vector<TAction>& actions) {
+                this->current_state   = state;
+                this->current_actions = actions;
+                return this->pi->choose_action(this->q, actions, state);
             }
 
             /**
@@ -45,12 +46,14 @@ namespace librl { namespace agent {
             void set_learning_parameters(std::vector<double> parameters) {
                 this->gamma = parameters[1];
             }
-
         protected:
             double get_reinforcement(TState prev_state, TAction action, TState next_state, double reward) const {
-                TAction future_action = this->pi->predict_action(this->q, this->get_available_actions(), next_state);
+                TAction future_action = this->pi->predict_action(this->q, current_actions, next_state);
                 return reward + this->gamma * this->q->Q(next_state, future_action);
             }
+
+            TState state;
+            std::vector<TAction> actions;
         };
     }}
 #endif // SARSAAGENT_HPP

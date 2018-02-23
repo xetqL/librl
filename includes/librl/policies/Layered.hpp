@@ -23,10 +23,15 @@ namespace librl { namespace policy {
 
     public:
         template <template<class _TState, class _TAction> class LayerType, unsigned long int duration, class... Args>
-        void add(Args... args) { layers.push_back(std::make_pair(std::make_shared< LayerType<TState, TAction> >(args...), duration)); }
+        void add(Args... args) {
+            layers.push_back(std::make_pair(std::make_shared< LayerType<TState, TAction> >(args...), duration));
+        }
 
         template <template<class _TState, class _TAction> class LayerType, class... Args> //by default a layer is executed infinitely
-        void add(Args... args) { layers.push_back(std::make_pair(std::make_shared< LayerType<TState, TAction> >(args...), std::numeric_limits<unsigned long int>::max())); }
+        void add(Args... args) {
+            layers.push_back(std::make_pair(std::make_shared< LayerType<TState, TAction> >(args...),
+                                            std::numeric_limits<unsigned long int>::max()));
+        }
 
         virtual TAction choose_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
                                       const std::vector<TAction> &available_actions,

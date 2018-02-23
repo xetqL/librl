@@ -5,10 +5,10 @@
 #ifndef RLAGENT
 #define RLAGENT
 #include "../approximators/FunctionApproximator.hpp"
-#include "AgentStatistics.hpp"
 #include "../utils/array.hpp"
 #include "../utils/util.hpp"
 #include "../env/MDP.hpp"
+#include "../policies/Policy.hpp"
 
 #include <cstdio>
 #include <cstdlib>
@@ -16,13 +16,6 @@
 #include <vector>
 #include <memory>
 
-namespace librl { namespace agent { template<typename TState, typename TAction> class RLAgent; }}
-#include "../policies/Policy.hpp"
-
-#define LOGGING_STATE_ENABLED 0
-#define GET_LOGGING_STATE_ENABLED 0
-#define START_ACTION 0
-//namespace librl { namespace policy { template<typename TState, typename TAction> class Policy; /*cross-import*/ }}
 namespace librl { namespace agent {
 template<typename TState, typename TAction>
 class RLAgent {
@@ -44,14 +37,18 @@ public:
 
     void set_behavioral_policy(librl::policy::Policy<TState, TAction>* pi) { this->pi = pi; }
 
-    /**
-     * @brief Select the action to perform given the current policy pi and the state of the environment
-     */
+    virtual TAction choose_action(const TState& state, const std::vector<TAction>& actions) = 0;
+    virtual TAction choose_action(const std::vector<TAction>& actions) { return this->choose_action(this->mdp->current_state, actions); }
     virtual TAction choose_action() { return this->choose_action(this->mdp->get_available_actions()); }
-    virtual TAction choose_action(const std::vector<TAction>& actions) const = 0;
 
     /**
-     * @brief Reward the agent with the signal for performing action A in state S
+     * Reward the agent for the action A taken in state S leading to state S'. Should only be used
+     * after a call to choose_action(...). Only experienced user may call learn() without calling
+     * choose_action.
+     * @param prev_state The previous state S
+     * @param action The action taken in state S
+     * @param next_state The result of the state transition S'
+     * @param reward The scalar reward
      */
     virtual void learn(TState prev_state, TAction action, TState next_state, double reward) = 0;
 
@@ -61,8 +58,6 @@ public:
     virtual void set_learning_parameters(std::vector<double> parameters) = 0;
 
     virtual void notify() const { pi->update(); }
-
-    TState current_state() const { return this->mdp->current_state; }
 
     std::vector<TAction> get_available_actions() const { return this->mdp->get_available_actions(); }
 

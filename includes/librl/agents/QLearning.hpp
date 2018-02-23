@@ -25,8 +25,8 @@ namespace librl { namespace agent {
              * @brief Method for asking the RL agent to starting to perform an action
              * @return Gives the id of the action to perform
              */
-            TAction choose_action(const std::vector<TAction>& actions) const {
-                TAction action = this->pi->choose_action(this->q, actions, this->current_state());
+            TAction choose_action(const TState& state, const std::vector<TAction>& actions) {
+                TAction action = this->pi->choose_action(this->q, actions, state);
                 return action;
             }
 

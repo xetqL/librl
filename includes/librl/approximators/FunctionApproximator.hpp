@@ -114,12 +114,10 @@ namespace librl{ namespace approximator {
                 double max = std::numeric_limits<double>::lowest();
                 if(this->_Q.find(state) == this->_Q.end()) return default_value;
                 if(this->_Q.at(state).size() == 0) return default_value;
-
                 for(auto const &action_value : this->_Q.at(state)){ //go through actions
                     double qv = action_value.second;
                     if (max <= qv) max = qv;
                 }
-
                 return max == std::numeric_limits<double>::lowest() ? default_value : max;
             }
 
