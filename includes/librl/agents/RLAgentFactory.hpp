@@ -19,7 +19,7 @@ namespace librl { namespace agent {
         get_instance(std::string algorithm_name,
                      double discount_factor,
                      librl::policy::Policy<State, Action>* policy,
-                     librl::approximator::ActionValueApproximator<State,Action>* fa) {
+                     librl::approximator::ActionValueApproximator<State, Action>* fa) {
             if (!algorithm_name.compare("qlearning")) {
                 return std::move(std::make_unique<QLearning<State, Action>>(policy, fa, discount_factor));
             } else if (!algorithm_name.compare("sarsa")) {

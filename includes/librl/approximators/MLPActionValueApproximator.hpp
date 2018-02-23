@@ -18,7 +18,7 @@
 namespace librl { namespace approximator {
 
 template<class ModelType, class OptimizerType = mlpack::optimization::RMSProp>
-class MLPActionValueApproximator : public ActionValueApproximator<arma::vec, int> {
+class MLPActionValueApproximator : public ActionValueApproximator<arma::mat, int> {
     ModelType* model;
     OptimizerType opt;
     int max_actions;
@@ -27,14 +27,14 @@ public:
     MLPActionValueApproximator(
             ModelType* model,
             OptimizerType& optimizer,
-            int max_actions,
-            double alpha) :
+            double alpha,
+            int max_actions) :
             model(model),
             opt(optimizer),
             max_actions(max_actions),
-            ActionValueApproximator<arma::vec, int>(alpha) {}
+            ActionValueApproximator<arma::mat, int>(alpha) {}
 
-    void reset() {model.ResetParameters();};
+    void reset() {model->ResetParameters();};
 
     /**
      * There is no learning parameter when using neural network as a function
@@ -49,10 +49,18 @@ public:
      * @param state
      * @return argmax_a Q(s,a)
      */
-    int argmax(arma::vec state, std::vector<int> available_actions = std::vector<int>() ) const {
-        arma::vec responses = arma::zeros(max_actions);
+    int argmax(arma::mat state, std::vector<int> available_actions = std::vector<int>() ) const {
+        arma::mat responses = arma::zeros(max_actions);
         const_cast<ModelType*>(model)->Predict(state, responses);
-        return arma::index_max(responses);
+        //std::cout << arma::index_max(responses).index_max() << std::endl;
+        int i = 0, idx = -1;
+        double max = -1000000;
+        for (int i = 0; i < max_actions; ++i) if (responses(i) > max) {
+                idx = i;
+                max = responses(i);
+            }
+        //std::cout << idx << std::endl;
+        return idx+1;
     }
 
     /**
@@ -61,27 +69,30 @@ public:
      * @param action
      * @param value
      */
-    void Q(arma::vec state, int action, double value) {
-        arma::vec responses = arma::zeros(max_actions);
-        responses(action) = value;
-        model->Train(state, responses, opt);
+    void Q(arma::mat state, int action, double value) {
+        arma::mat responses = arma::zeros(max_actions);
+        model->Predict(state, responses);
+        responses(action-1) = value;
+        for(int i = 0; i < 1; i++) model->Train(state, responses, opt);
     }
 
     /**
      * @brief Get max Q(s,a)
      */
-    double max(arma::vec state) const {
-        arma::vec responses = arma::zeros(max_actions);
+    double max(arma::mat state) const {
+        arma::mat responses = arma::zeros(max_actions);
         const_cast<ModelType*>(model)->Predict(state, responses);//I thank a lot mlpack devs. for the non cost function.
-        return arma::max(responses);
+        return arma::max(responses).max();
     }
     /**
     * @brief Get Q(s,a)
     */
-    double Q(arma::vec state, int action) const {
-        arma::vec responses = arma::zeros(max_actions);
+    double Q(arma::mat state, int action) const {
+        arma::mat responses = arma::zeros(max_actions);
+        std::cout << "Qget " << action << std::endl;
+        std::cout << responses.n_cols << " " << responses.n_rows <<" " <<responses << std::endl;
         const_cast<ModelType*>(model)->Predict(state, responses);//I thank a lot mlpack devs. for the non cost function.
-        return responses(action);
+        return responses(action-1);
     }
 };
 
