@@ -18,6 +18,13 @@ namespace librl { namespace policy {
             return action;
         }
 
+        virtual TAction predict_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+                                      const std::vector<TAction> &available_actions,
+                                      const TState &at_state) const {
+            auto action = ucb1Exploration(f, available_actions, at_state);
+            return action;
+        }
+
         std::string getName() const {
             return "UCB1 Exploration";
         }
@@ -53,7 +60,7 @@ namespace librl { namespace policy {
             const int nb_actions = available_actions.size();
             TAction selected_action;
             for (auto const &action : available_actions) {
-                ucbValue = f->Q(at_state, action) + std::sqrt(2.0 * std::log(step_counter / this->numberOfTimeAction[action]));
+                ucbValue = f->Q(at_state, action) + std::sqrt(2.0 * std::log(step_counter / this->numberOfTimeAction.at(action)));
                 if (ucbValue > max) {
                     max = ucbValue;
                     selected_action = action;

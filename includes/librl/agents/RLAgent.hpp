@@ -50,27 +50,14 @@ public:
         this->pi = pi;
     }
 
-    void print_report() const {
-        std::cout << "***************************************" << std::endl;
-        std::cout << " RL Agent stats report" << std::endl;
-        std::cout << "***************************************" << std::endl;
-        std::cout << "Agent uuid    : " << this->uuid << std::endl;
-        std::cout << "Reward mean     : " << this->stats->meanReward << std::endl;
-        std::cout << "Reward variance : " << this->stats->varianceReward << std::endl;
-        std::cout << "Reward standard deviation : " << std::sqrt(this->stats->varianceReward) << std::endl;
-        std::cout << "***************************************" << std::endl;
-        print2DArray(this->stats->numberOfTimeAction);
-    }
-
-    /**
-     * @brief Get the agent's algorithm name
-     */
-    virtual std::string getName() const = 0;
-
     /**
      * @brief Select the action to perform given the current policy pi and the state of the environment
      */
-    virtual TAction choose_action() const = 0;
+    virtual TAction choose_action() {
+        return this->choose_action(this->mdp->get_available_actions());
+    }
+
+    virtual TAction choose_action(const std::vector<TAction>& actions) const = 0;
 
     /**
      * @brief Reward the agent with the signal for performing action A in state S
@@ -96,9 +83,8 @@ public:
 
     const librl::policy::Policy<TState, TAction>* get_policy() { return this->pi; };
 
-    std::shared_ptr<librl::stats::AgentStatistics> stats;
-    librl::approximator::ActionValueApproximator<TState, TAction>* q;
 protected:
+    librl::approximator::ActionValueApproximator<TState, TAction>* q;
     /**
      * Compute the reinforcement
      * @param action
@@ -108,11 +94,10 @@ protected:
      */
     virtual double get_reinforcement(TState prev_state, TAction action, TState next_state, double reward) const = 0;
 
-    std::string uuid;
     librl::policy::Policy<TState, TAction>* pi;
     librl::environment::MDP<TState, TAction>* mdp;
-    double gamma;
 
+    double gamma;
 };
 }}
 #include "../policies/Policy.hpp"

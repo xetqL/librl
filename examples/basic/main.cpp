@@ -46,10 +46,7 @@ int main(int argc, char** argv){
     std::vector<int> cnt(4);
 
     for(int i = 0; i < 15; ++i){
-        std::cout << player->get_policy()->getName() << std::endl;
-
         auto s = player->choose_action();
-
         auto reward = mdp.get_reward(s);
         auto transition = mdp.perform_state_transition(s);
         player->learn(transition.first, s, transition.second, reward);

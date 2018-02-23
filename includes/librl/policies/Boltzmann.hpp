@@ -33,6 +33,14 @@ namespace librl { namespace policy {
                                           const std::vector<TAction> &available_actions,
                                           const TState &at_state) {
                 TAction selectedAction = boltzmannExploration(f, available_actions, at_state, this->temperature);
+                this->update();
+                return selectedAction;
+            }
+
+            virtual TAction predict_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+                                          const std::vector<TAction> &available_actions,
+                                          const TState &at_state) {
+                TAction selectedAction = boltzmannExploration(f, available_actions, at_state, this->temperature);
                 return selectedAction;
             }
 

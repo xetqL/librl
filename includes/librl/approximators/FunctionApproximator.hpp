@@ -34,8 +34,6 @@ namespace librl{ namespace approximator {
              * @param state
              * @return argmax_a Q(s,a)
              */
-            //virtual TAction argmax(TState state) const = 0;
-
 
             virtual TAction argmax(const TState state, std::vector<TAction> available_actions = std::vector<TAction>()) const = 0;
 
@@ -85,6 +83,7 @@ namespace librl{ namespace approximator {
                     if(available_actions.size() == 0) throw std::runtime_error("State has never been seen and no available action is given... in FunctionApproximator.hpp");
                     return *select_randomly(available_actions.begin(), available_actions.end());
                 }
+
                 if(available_actions.size() == 0) { // no action is provided by caller
                     auto state_map = this->_Q.at(state);
                     std::for_each(state_map.begin(), state_map.end(), [&](const auto& pair) mutable {available_actions.push_back(pair.first);});

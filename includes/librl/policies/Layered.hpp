@@ -43,6 +43,13 @@ namespace librl { namespace policy {
             return action;
         }
 
+        virtual TAction predict_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+                                      const std::vector<TAction> &available_actions,
+                                      const TState &at_state) const {
+            auto policy = layers.front().first;
+            return policy->predict_action(f, available_actions, at_state);
+        }
+
         std::string getName() const { return layers.front().first->getName(); }
 
         void reset() {}

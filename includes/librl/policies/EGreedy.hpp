@@ -21,6 +21,17 @@ namespace librl { namespace policy {
                 return eGreedyExploration(f, available_actions, at_state);
             }
 
+            virtual TAction predict_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+                                          const std::vector<TAction> &available_actions,
+                                          const TState &at_state) const {
+                auto v = ((double) std::rand() / (RAND_MAX));
+                if (v > E) {
+                    return g.predict_action(f, available_actions, at_state);
+                } else {
+                    return *select_randomly(available_actions.begin(), available_actions.end());
+                }
+            }
+
             std::string getName() const {
                 return "E-Greedy Exploration";
             }

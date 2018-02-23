@@ -16,6 +16,12 @@ namespace librl { namespace policy {
                 return greedyExploration(f, available_actions, at_state);
             }
 
+            virtual TAction predict_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+                                          const std::vector<TAction> &available_actions,
+                                          const TState &at_state) const {
+                return greedyExploration(f, available_actions, at_state);
+            }
+
             virtual std::unordered_map<TAction, double> get_probabilities(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
                                                                 const std::vector<TAction> &available_actions,
                                                                 const TState &at_state) const {

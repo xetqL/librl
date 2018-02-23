@@ -9,6 +9,7 @@ namespace librl { namespace agent {
         template<typename TState, typename TAction>
         class ExpectedSarsa : public RLAgent<TState, TAction> {
         public:
+            const std::string name = "Expected Sarsa";
 
             ExpectedSarsa(
                     librl::policy::Policy<TState, TAction> *pi,
@@ -22,8 +23,8 @@ namespace librl { namespace agent {
              * @brief Method for asking the RL agent to starting to perform an action
              * @return Gives the id of the action to perform
              */
-            TAction choose_action() const {
-                return this->pi->choose_action(this->q, this->get_available_actions(), this->current_state());
+            TAction choose_action(const std::vector<TAction>& actions) const {
+                return this->pi->choose_action(this->q, actions, this->current_state());
             }
 
             /**
@@ -36,12 +37,7 @@ namespace librl { namespace agent {
                 this->q->Q(prev_state, action, value);
             }
 
-            std::string getName() const {
-                return "Expected Sarsa";
-            }
-
             void reset() {
-                this->stats = std::make_shared<librl::stats::AgentStatistics>();
                 this->pi->reset();
                 this->q->reset();
             }

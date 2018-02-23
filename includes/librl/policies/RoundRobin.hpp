@@ -36,6 +36,16 @@ public:
         return action;
     }
 
+    virtual TAction predict_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+                                  const std::vector<TAction> &available_actions,
+                                  const TState &at_state) const {
+        int action_index_at_state;
+        if(action_indices.find(at_state) == action_indices.end()) action_index_at_state = 0;
+        else action_index_at_state = action_indices.at(at_state);
+        TAction action = available_actions.at(action_index_at_state % available_actions.size());
+        return action;
+    }
+
     virtual std::string getName() const {return "Round Robin";};
 
     virtual void reset() {action_indices.clear();};

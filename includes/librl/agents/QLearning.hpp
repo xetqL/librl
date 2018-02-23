@@ -11,6 +11,7 @@ namespace librl { namespace agent {
         template<typename TState, typename TAction>
         class QLearning : public RLAgent<TState, TAction> {
         public:
+            const std::string name = "QLearning";
 
             QLearning(
                     librl::policy::Policy<TState, TAction> *pi,
@@ -24,14 +25,11 @@ namespace librl { namespace agent {
              * @brief Method for asking the RL agent to starting to perform an action
              * @return Gives the id of the action to perform
              */
-            TAction choose_action() const {
-                TAction action = this->pi->choose_action(this->q, this->get_available_actions(), this->current_state());
+            TAction choose_action(const std::vector<TAction>& actions) const {
+                TAction action = this->pi->choose_action(this->q, actions, this->current_state());
                 return action;
             }
 
-            std::string getName() const {
-                return "QLearning";
-            }
 
             void reset() {
                 this->pi->reset();

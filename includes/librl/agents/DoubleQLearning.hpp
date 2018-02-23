@@ -7,6 +7,7 @@ namespace librl { namespace agent {
         template<typename TState, typename TAction>
         class DoubleQLearning : public RLAgent<TState, TAction> {
         public:
+            const std::string name = "Double Q-Learning";
 
             DoubleQLearning(
                     librl::policy::Policy<TState, TAction> *pi,
@@ -26,28 +27,22 @@ namespace librl { namespace agent {
                 this->q->Q(prev_state, action, value);
             }
 
-            std::string getName() const {
-                return "Double Q-Learning";
-            }
-
             void set_learning_parameters(std::vector<double> parameters) {
                 this->gamma = parameters[1];
                 this->alpha = parameters[0];
             }
 
             void reset() {
-                this->stats = std::make_shared<librl::stats::AgentStatistics>();
                 this->pi->reset();
                 this->q->reset();
             }
 
-            TAction choose_action() const {
-                TAction action = this->pi->choose_action(this->q, this->get_available_actions(), this->current_state());
+            TAction choose_action(const std::vector<TAction>& actions) const {
+                TAction action = this->pi->choose_action(this->q, actions, this->current_state());
                 return action;
             }
 
         protected:
-
             double get_reinforcement(TState prev_state, TAction action, TState next_state, double reward) const {
                 auto function_approximators = std::dynamic_pointer_cast<librl::approximator::DoubleApproximator<TState, TAction> >(
                         this->q)->get_FA_update_pair();
