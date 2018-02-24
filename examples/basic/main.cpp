@@ -16,7 +16,7 @@
  */
 
 std::vector<int> ACTION(arma::mat S) {
-    std::vector<int> x = {1, 2, 3, 4};
+    std::vector<int> x = {0,1,2,3};
     return x;
 }
 
@@ -65,7 +65,7 @@ int main(int argc, char** argv){
         auto reward = mdp.get_reward(s);
         auto transition = mdp.perform_state_transition(s);
         player->learn(transition.first, s, transition.second, reward);
-        cnt[s-1]++;
+        cnt[s]++;
     }
 
     for(int i = 0; i < 4; i++){

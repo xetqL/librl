@@ -26,9 +26,6 @@ class MDP {
 public:
     TState current_state;
 
-    /**
-     Cnamespace librl{ namespace approximator {onstructor with specified starting state
-     */
     MDP(std::function<std::vector<TState>() > states,
         std::function<std::vector<TAction>(TState) > actions,
         std::function<double(TState, TAction) > reward_func,
@@ -41,9 +38,6 @@ public:
         current_state = starting_state;
     }
 
-    /**
-     Cnamespace librl{ namespace approximator {onstructor with specified starting state
-     */
     MDP(std::function<std::vector<TAction>(TState) > actions,
         std::function<double(TState, TAction) > reward_func,
         std::function<TState(TState, TAction) > transition_func,
@@ -69,45 +63,6 @@ private:
     std::function<double(TState, TAction) >      R;
     std::function<TState(TState, TAction) >      T;
 };
-
-/**
- * Dummy MDP
- */
-//template<typename TState, typename TAction>
-//class CustomMDP {
-//public:
-//
-//
-//    /**
-//     Constructor with random starting state
-//     */
-//    CustomMDP() {
-//    }
-//
-//    /**
-//     Cnamespace librl{ namespace approximator {onstructor with specified starting state
-//     */
-//    CustomMDP(){
-//    }
-//
-//    std::pair<TState, TState> perform_state_transition(TAction a) {
-//        TState prev_state = this->current_state,
-//                next_state = T(this->current_state, a);
-//        this->current_state = next_state;
-//        return std::make_pair(prev_state, next_state);
-//    }
-//
-//    double get_reward(TState s, TAction a) {
-//        return R(s, a);
-//    }
-//
-//    std::vector<TAction> get_available_actions() {
-//        return this->A(this->current_state);
-//    }
-//
-//protected:
-//    TState current_state;
-//};
 }}
 #endif /* MDP_HPP */
 

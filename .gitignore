@@ -49,4 +49,6 @@ cmake-build-*/
 *.cbp
 .idea
 
-
+# Old examples
+examples/gridworld/
+examples/tictactoe/

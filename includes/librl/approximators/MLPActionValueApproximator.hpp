@@ -41,14 +41,14 @@ public:
     int argmax(arma::mat state, std::vector<int> available_actions = std::vector<int>() ) const {
         arma::mat responses = arma::zeros(max_actions);
         const_cast<ModelType*>(model)->Predict(state, responses);//I thank a lot mlpack devs. for the non cost function.
-        return responses.index_max() + 1;
+        return responses.index_max();
     }
 
     void Q(arma::mat state, int action, double value) {
         arma::mat responses = arma::zeros(max_actions);
         model->Predict(state, responses);
-        responses(action-1) = value;
-        for(int i = 0; i < 1; i++) model->Train(state, responses, opt);
+        responses(action) = value;
+        model->Train(state, responses, opt);
     }
 
     double max(arma::mat state) const {
@@ -59,10 +59,8 @@ public:
 
     double Q(arma::mat state, int action) const {
         arma::mat responses = arma::zeros(max_actions);
-        std::cout << "Qget " << action << std::endl;
-        std::cout << responses.n_cols << " " << responses.n_rows <<" " <<responses << std::endl;
         const_cast<ModelType*>(model)->Predict(state, responses);//I thank a lot mlpack devs. for the non cost function.
-        return responses(action-1);
+        return responses(action);
     }
 };
 
