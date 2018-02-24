@@ -33,8 +33,19 @@ public:
              pi(pi),
              gamma(discount_factor) {}
 
+    /**
+     * Set the behavioral policy followed by the agent.
+     * @param pi A pointer to the behavioral policy
+     */
     void set_behavioral_policy(librl::policy::Policy<TState, TAction>* pi) { this->pi = pi; }
 
+    /**
+     * Choose an action in a given state from the possible actions given in parameters.
+     * This function should be used before this->learn.
+     * @param state The current state of the env.
+     * @param actions The available actions
+     * @return The selected action
+     */
     virtual TAction choose_action(const TState& state, const std::vector<TAction>& actions) = 0;
 
     /**
@@ -48,20 +59,32 @@ public:
      */
     virtual void learn(TState prev_state, TAction action, TState next_state, double reward) = 0;
 
+    /**
+     * Set the learning parameters for the agent.
+     * @param parameters A vector containing the parameters
+     */
     virtual void set_learning_parameters(std::vector<double> parameters) = 0;
 
+    /**
+     * Notify the object managed by the agent.
+     */
     virtual void notify() const { pi->update(); }
 
+    /**
+     * Get the behavioral policy
+     * @return The behavioral policy
+     */
     const librl::policy::Policy<TState, TAction>* get_policy() { return this->pi; };
 
 protected:
     /**
-    * Compute the reinforcement
-    * @param action
-    * @param reward
-    * @param nextState
-    * @return
-    */
+     * Compute the reinforcement used to update the function approximator.
+     * @param prev_state The state where the action has been taken.
+     * @param action The action selected by the agent.
+     * @param next_state The destination state.
+     * @param reward The reward from taking action in state prev_state
+     * @return The reinforcement
+     */
     virtual double get_reinforcement(TState prev_state, TAction action, TState next_state, double reward) const = 0;
 
     librl::approximator::ActionValueApproximator<TState, TAction>* q;

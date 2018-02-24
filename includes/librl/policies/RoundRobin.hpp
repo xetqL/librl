@@ -46,8 +46,6 @@ public:
         return action;
     }
 
-    virtual std::string getName() const {return "Round Robin";};
-
     virtual void reset() {action_indices.clear();};
 
     virtual void update() {};

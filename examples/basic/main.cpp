@@ -1,14 +1,16 @@
 //
 // Created by xetql on 15.02.18.
 //
-#include <librl/agents/RLAgentFactory.hpp>
-#include <librl/approximators/FunctionApproximator.hpp>
-#include <librl/approximators/MLPActionValueApproximator.hpp>
+#include "../../includes/librl/agents/RLAgentFactory.hpp"
+#include "../../includes/librl/approximators/FunctionApproximator.hpp"
+#include "../../includes/librl/approximators/MLPActionValueApproximator.hpp"
+#include "../../includes/librl/policies/Policies.hpp"
+
 #include <mlpack/methods/ann/init_rules/const_init.hpp>
-#include <librl/policies/Policies.hpp>
 
 #include <vector>
 
+#include <armadillo>
 /**
  * Multi armed bandit example
  */
@@ -38,8 +40,6 @@ arma::mat TRANSITION(arma::mat S, int A) {
 }
 
 int main(int argc, char** argv){
-    //librl::approximator::ArrayActionValueApproximator<int, int> afa(1.0);
-
     librl::environment::MDP<arma::mat, int> mdp(ACTION, REWARD, TRANSITION, arma::zeros(1));
     librl::policy::Layered<arma::mat, int> layeredPolicy;
 

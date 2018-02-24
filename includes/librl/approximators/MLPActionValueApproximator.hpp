@@ -36,39 +36,14 @@ public:
 
     void reset() {model->ResetParameters();};
 
-    /**
-     * There is no learning parameter when using neural network as a function
-     * approximation
-     * @param alpha
-     */
     void set_learning_parameter(double alpha) {}
 
-    /**
-     * Get argmax_a Q(s,a), it may contains several indices
-     * Query NN
-     * @param state
-     * @return argmax_a Q(s,a)
-     */
     int argmax(arma::mat state, std::vector<int> available_actions = std::vector<int>() ) const {
         arma::mat responses = arma::zeros(max_actions);
-        const_cast<ModelType*>(model)->Predict(state, responses);
-        //std::cout << arma::index_max(responses).index_max() << std::endl;
-        int i = 0, idx = -1;
-        double max = -1000000;
-        for (int i = 0; i < max_actions; ++i) if (responses(i) > max) {
-                idx = i;
-                max = responses(i);
-            }
-        //std::cout << idx << std::endl;
-        return idx+1;
+        const_cast<ModelType*>(model)->Predict(state, responses);//I thank a lot mlpack devs. for the non cost function.
+        return responses.index_max() + 1;
     }
 
-    /**
-     * Setter of the Q function
-     * @param state
-     * @param action
-     * @param value
-     */
     void Q(arma::mat state, int action, double value) {
         arma::mat responses = arma::zeros(max_actions);
         model->Predict(state, responses);
@@ -76,17 +51,12 @@ public:
         for(int i = 0; i < 1; i++) model->Train(state, responses, opt);
     }
 
-    /**
-     * @brief Get max Q(s,a)
-     */
     double max(arma::mat state) const {
         arma::mat responses = arma::zeros(max_actions);
         const_cast<ModelType*>(model)->Predict(state, responses);//I thank a lot mlpack devs. for the non cost function.
         return arma::max(responses).max();
     }
-    /**
-    * @brief Get Q(s,a)
-    */
+
     double Q(arma::mat state, int action) const {
         arma::mat responses = arma::zeros(max_actions);
         std::cout << "Qget " << action << std::endl;

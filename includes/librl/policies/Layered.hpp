@@ -15,56 +15,54 @@
 
 namespace librl { namespace policy {
 
-    template<typename TState, typename TAction>
-    class Layered : public Policy<TState, TAction> {
-        using DurationType  = unsigned long int;
-        using PtrLayerTypes = std::shared_ptr<Policy<TState, TAction>>;
-        std::deque< std::pair<PtrLayerTypes, DurationType> > layers;
+template<typename TState, typename TAction>
+class Layered : public Policy<TState, TAction> {
+    using DurationType  = unsigned long int;
+    using PtrLayerTypes = std::shared_ptr<Policy<TState, TAction>>;
+    std::deque< std::pair<PtrLayerTypes, DurationType> > layers;
 
-    public:
-        template <template<class _TState, class _TAction> class LayerType, DurationType duration, class... Args>
-        void add(Args... args) {
-            layers.push_back(std::make_pair(std::make_shared< LayerType<TState, TAction> >(args...), duration));
-        }
+public:
+    template <template<class _TState, class _TAction> class LayerType, DurationType duration, class... Args>
+    void add(Args... args) {
+        layers.push_back(std::make_pair(std::make_shared< LayerType<TState, TAction> >(args...), duration));
+    }
 
-        template <template<class _TState, class _TAction> class LayerType, class... Args> //by default a layer is executed infinitely
-        void add(Args... args) {
-            layers.push_back(std::make_pair(std::make_shared< LayerType<TState, TAction> >(args...),
-                                            std::numeric_limits<DurationType>::max()));
-        }
+    template <template<class _TState, class _TAction> class LayerType, class... Args> //by default a layer is executed infinitely
+    void add(Args... args) {
+        layers.push_back(std::make_pair(std::make_shared< LayerType<TState, TAction> >(args...),
+                                        std::numeric_limits<DurationType>::max()));
+    }
 
-        virtual TAction choose_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
-                                      const std::vector<TAction> &available_actions,
-                                      const TState &at_state) {
-            auto policy = layers.front().first;
+    virtual TAction choose_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+                                  const std::vector<TAction> &available_actions,
+                                  const TState &at_state) {
+        auto policy = layers.front().first;
 
-            auto action = policy->choose_action(f, available_actions, at_state);
+        auto action = policy->choose_action(f, available_actions, at_state);
 
-            if(layers.size() > 1) layers.front().second--;
+        if(layers.size() > 1) layers.front().second--;
 
-            if(layers.front().second == 0 && layers.size() > 1)
-                layers.pop_front();
+        if(layers.front().second == 0 && layers.size() > 1)
+            layers.pop_front();
 
-            return action;
-        }
+        return action;
+    }
 
-        virtual TAction predict_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
-                                      const std::vector<TAction> &available_actions,
-                                      const TState &at_state) const {
-            auto policy = layers.front().first;
-            return policy->predict_action(f, available_actions, at_state);
-        }
+    virtual TAction predict_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+                                  const std::vector<TAction> &available_actions,
+                                  const TState &at_state) const {
+        auto policy = layers.front().first;
+        return policy->predict_action(f, available_actions, at_state);
+    }
 
-        std::string getName() const { return layers.front().first->getName(); }
+    void reset() {}
 
-        void reset() {}
-
-        virtual std::unordered_map<TAction, double> get_probabilities(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
-                                                                      const std::vector<TAction> &available_actions,
-                                                                      const TState &at_state) const {
-            auto policy = layers.front().first;
-            return policy->get_probabilities(f, available_actions, at_state);
-        }
-    };
+    virtual std::unordered_map<TAction, double> get_probabilities(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+                                                                  const std::vector<TAction> &available_actions,
+                                                                  const TState &at_state) const {
+        auto policy = layers.front().first;
+        return policy->get_probabilities(f, available_actions, at_state);
+    }
+};
 }}
 #endif //PROJECT_LAYEREDPOLICY_HPP

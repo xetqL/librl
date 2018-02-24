@@ -37,8 +37,6 @@ public:
         return action;
     }
 
-    virtual std::string getName() const {return "Soft Round Robin";};
-
     virtual void reset() {action_index = 0;};
 
     virtual std::string to_string() { return ""; };
