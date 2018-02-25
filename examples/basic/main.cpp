@@ -51,7 +51,9 @@ int main(int argc, char** argv){
     model.Add<mlpack::ann::Linear<> >(6, 4);
     model.Add<mlpack::ann::LeakyReLU<> >();
 
-    librl::approximator::MLPActionValueApproximator<mlpack::ann::FFN<mlpack::ann::MeanSquaredError<>, mlpack::ann::ConstInitialization  >> learner(&model, opt, opt.Alpha(), 4);
+    librl::approximator::MLPActionValueApproximator<
+        mlpack::ann::FFN<mlpack::ann::MeanSquaredError<>, mlpack::ann::ConstInitialization  >
+    > learner(&model, opt, opt.Alpha(), 4);
 
     layeredPolicy.add<librl::policy::EGreedy, 5>(1.0);
     layeredPolicy.add<librl::policy::Greedy>();
