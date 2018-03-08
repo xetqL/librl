@@ -14,7 +14,7 @@ set(EXECUTABLE_SOURCE_DIRECTORY ${CMAKE_SOURCE_DIR}/src)
 set(TEST_SOURCE_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
 set(INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/includes)
 
-set(INCLUDES_INSTALL_DIRECTORY ${CMAKE_INSTALL_PREFIX}/include/librl/)
+set(INCLUDES_INSTALL_DIRECTORY ${CMAKE_INSTALL_PREFIX}/include/)
 
 add_library(rl INTERFACE)
 
@@ -25,6 +25,4 @@ install(DIRECTORY includes/
         FILES_MATCHING PATTERN "*.hpp"
         PERMISSIONS WORLD_READ WORLD_WRITE)
 
-add_custom_target(gridworld
-        COMMAND g++ -std=c++17 examples/gridworld/*.cpp -o bin/gridworld -Wall -std=c++14 -L/lib
-)
+
