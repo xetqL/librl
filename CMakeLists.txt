@@ -22,7 +22,6 @@ target_link_libraries(rl INTERFACE libboost)
 
 install(DIRECTORY includes/
         DESTINATION  ${INCLUDES_INSTALL_DIRECTORY}
-        FILES_MATCHING PATTERN "*.hpp"
-        PERMISSIONS WORLD_READ WORLD_WRITE)
+        FILES_MATCHING PATTERN "*.hpp")
 
 
