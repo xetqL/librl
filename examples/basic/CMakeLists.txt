@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.9)
 project(liblj)
 set(CMAKE_BUILD_TYPE Debug)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 14)
 
 include_directories(/home/xetql/boost_1_66_0)
 link_directories(/home/xetql/boost_1_66_0/stage/lib)

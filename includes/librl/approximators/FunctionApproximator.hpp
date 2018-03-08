@@ -36,17 +36,17 @@ public:
      * @return argmax_a Q(s,a)
      */
 
-    virtual TAction argmax(const TState state, std::vector<TAction> available_actions = std::vector<TAction>()) const = 0;
+    virtual TAction argmax(const TState& state, const std::vector<TAction>& available_actions = std::vector<TAction>()) const = 0;
 
     /**
      * @brief Get max_a Q(s,a)
      */
-    virtual double max(TState state) const = 0;
+    virtual double max(const TState& state) const = 0;
 
     /**
      * @brief Get Q(s,a)
      */
-    virtual double Q(TState state, TAction action) const = 0;
+    virtual double Q(const TState& state, const TAction& action) const = 0;
 
     /**
      * @brief reset the function approximation
@@ -63,7 +63,7 @@ public:
      * @param action
      * @param value
      */
-    virtual void Q(TState state, TAction action, double value) = 0;
+    virtual void Q(const TState& state, const TAction& action, double value) = 0;
 
     virtual double get_learning_rate() const {
         return alpha;
@@ -77,7 +77,7 @@ public:
 
     ArrayActionValueApproximator(double _alpha, double default_value=0.0) : ActionValueApproximator<TState, TAction>(_alpha), default_value(default_value) {};
 
-    TAction argmax(const TState state, std::vector<TAction> available_actions = std::vector<TAction>()) const {
+    TAction argmax(const TState& state, const std::vector<TAction>& available_actions = std::vector<TAction>()) const {
         double max = std::numeric_limits<double>::lowest();
         std::vector <TAction> all_actions;
         if(this->_Q.find(state) == this->_Q.end()) { //state have never been seen -> available action should help
@@ -111,7 +111,7 @@ public:
     /**
      * @brief Get max_a Q(s,a)
      */
-    double max(TState state) const {
+    double max(const TState& state) const {
         double max = std::numeric_limits<double>::lowest();
         if(this->_Q.find(state) == this->_Q.end()) return default_value;
         if(this->_Q.at(state).size() == 0) return default_value;
@@ -128,7 +128,7 @@ public:
      * @param action
      * @return
      */
-    double Q(TState state, TAction action) const {
+    double Q(const TState& state, const TAction& action) const {
         if (this->_Q.find(state) == this->_Q.end()) return 0.0;
         if (this->_Q.at(state).find(action) == this->_Q.at(state).end()) return 0.0;
         return this->_Q.at(state).at(action);
@@ -145,7 +145,7 @@ public:
         return this->_Q.size();
     }
 
-    bool has_seen_state(TState s) {
+    bool has_seen_state(const TState& s) {
         return (this->_Q.find(s) != this->_Q.end());
     }
 
@@ -155,7 +155,7 @@ public:
      * @param action
      * @param value
      */
-    void Q(TState state, TAction action, double value) {
+    void Q(const TState& state, const TAction& action, double value) {
         if (this->_Q.find(state) == this->_Q.end()) //init state
             this->_Q[state] = std::unordered_map<TAction, double>();
 
@@ -198,12 +198,7 @@ public:
         left_function_turn = (bool) distribution(gen);
     };
 
-    /***************************************************************************
-     * Get argmax Q(s,a)
-     * @param state
-     * @return argmax_a Q(s,a)
-     **************************************************************************/
-    TAction argmax(const TState state, std::vector<TAction> available_actions = std::vector<TAction>()) const {
+    TAction argmax(const TState& state, const std::vector<TAction>& available_actions = std::vector<TAction>()) const {
         if(left_function_turn){
             return this->qa->argmax(state, available_actions);
         } else {
@@ -211,12 +206,12 @@ public:
         }
     }
 
-    /***************************************************************************
+    /**
      * Get a pair of function approximator, the first element of the pair
      * is the approximator that will be updated in the next update
      * and the second element is the other one.
      * @return argmax_a Q(s,a)
-     *************************************************************************/
+     */
     std::pair<ActionValueApproximator<TState, TAction> *, ActionValueApproximator<TState, TAction> *> get_FA_update_pair() {
         auto update_next = left_function_turn ? this->qa : this->qb;
         auto other = left_function_turn ? this->qb : this->qa;
@@ -225,10 +220,7 @@ public:
                 ArrayActionValueApproximator<TState, TAction> * >(update_next, other);
     }
 
-    /***************************************************************************
-     * @brief Get max Q(s,a)
-     *************************************************************************/
-    double max(TState state) const {
+    double max(const TState& state) const {
         if (left_function_turn) {
             return this->qa->max(state);
         } else {
@@ -242,19 +234,16 @@ public:
      * @param  action action taken
      * @return        Expected value of the action given the state
      */
-    double Q(TState state, TAction action) const {
+    double Q(const TState& state, const TAction& action) const {
         return merge(this->qa->Q(state, action), this->qb->Q(state, action));
     }
 
-    /***************************************************************************
-     * @brief reset the function approximation
-     *************************************************************************/
     void reset() {
         this->qa->reset();
         this->qb->reset();
     }
 
-    void Q(TState state, TAction action, double value) {
+    void Q(const TState& state, const TAction& action, double value) {
         // random update
         if (left_function_turn) {
             this->qa->Q(state, action, value);
@@ -265,14 +254,14 @@ public:
         left_function_turn = (bool) distribution(gen);
     }
 
-protected:
-    /***************************************************************************
+private:
+    /**
      * Merging strategy
      * @param  QaV the value of the left function approximator
      * @param  QbV the value of the right function approximator
      * @return     The merged values of Qa and Qb
-     ***************************************************************************/
-    double merge(double QaV, double QbV) {
+     */
+    inline double merge(double QaV, double QbV) {
         return (QaV + QbV) / 2.0;
     }
 
@@ -299,7 +288,7 @@ public:
      * @param state
      * @return argmax_a Q(s,a)
      */
-    TAction argmax(const TState state, std::vector<TAction> available_actions = std::vector<TAction>()) const {
+    TAction argmax(const TState& state, const std::vector<TAction>& available_actions = std::vector<TAction>()) const {
         double max = this->max(state);
 
         std::vector <TAction> all_actions;
@@ -327,7 +316,7 @@ public:
      * @param action
      * @param value
      */
-    void Q(TState state, TAction action, double value) {
+    void Q(const TState& state, const TAction& action, double value) {
         if (_afterstate.find(state_transition(state, action)) == _afterstate.end())
             _afterstate[state_transition(state, action)] = 1.0;
 
@@ -345,7 +334,7 @@ public:
     /**
      * @brief Get max_a Q(s,a)
      */
-    double max(TState state) const {
+    double max(const TState& state) const {
         double max = std::numeric_limits<double>::lowest();
         if(this->_Q.find(state) == this->_Q.end()) return 0.0;
         if(this->_Q.at(state).size() == 0) return 0.0;
@@ -365,7 +354,7 @@ public:
      * @param action
      * @return
      */
-    double Q(TState state, TAction action) const {
+    double Q(const TState& state, const TAction& action) const {
         if (_afterstate.find(state_transition(state, action)) == _afterstate.end())
             return 1.0;
 
@@ -385,7 +374,7 @@ public:
         this->_Q.clear();
     }
 
-    bool has_seen_state(TState s) {
+    bool has_seen_state(const TState& s) {
         return (this->_Q.find(s) != this->_Q.end());
     }
 
@@ -419,7 +408,7 @@ public:
      * @param action
      * @param value
      */
-    virtual void V(TState state, double value) = 0;
+    virtual void V(const TState& state, double value) = 0;
 
     /**
      * @brief Get max V(s)
@@ -429,7 +418,7 @@ public:
     /**
      * @brief Get V(s)
      */
-    virtual double V(TState state) const = 0;
+    virtual double V(const TState& state) const = 0;
 
     /**
      * @brief reset the function approximation
@@ -464,7 +453,7 @@ public:
      * @param state
      * @return argmax_a Q(s,a)
      */
-    std::vector <TState> argmax() const {
+    std::vector<TState> argmax() const {
         double max = this->max();
         std::vector <TState> idxV;
         for (auto const &actionValue : this->_V) {
@@ -481,7 +470,7 @@ public:
      * @param action
      * @param value
      */
-    void V(TState state, double value) {
+    void V(const TState& state, double value) {
         this->_V[state] = this->V(state) + this->beta * (value - this->V(state));
     }
 
@@ -503,7 +492,7 @@ public:
      * @param action
      * @return
      */
-    double V(TState state) const {
+    double V(const TState& state) const {
         if (this->_V.find(state) == this->_V.end())
             this->_V[state] = 0.0;
         return this->_V[state];
