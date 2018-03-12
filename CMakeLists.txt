@@ -1,25 +1,27 @@
-cmake_minimum_required(VERSION 3.8)
-project(liblj CXX)
+cmake_minimum_required(VERSION 3.9)
+project(liblj)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_COMPILER g++)
 
-set(CMAKE_BUILD_TYPE "Release")
+set(CMAKE_BUILD_TYPE Release)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -Wall -pedantic")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(EXECUTABLE_SOURCE_DIRECTORY ${CMAKE_SOURCE_DIR}/src)
-set(TEST_SOURCE_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
 set(INCLUDE_DIRECTORY ${CMAKE_SOURCE_DIR}/includes)
-
 set(INCLUDES_INSTALL_DIRECTORY ${CMAKE_INSTALL_PREFIX}/include/)
 
 add_library(rl INTERFACE)
 
-target_link_libraries(rl INTERFACE libboost)
+target_link_libraries(rl INTERFACE)
 
 install(DIRECTORY includes/
         DESTINATION  ${INCLUDES_INSTALL_DIRECTORY}
-        FILES_MATCHING PATTERN "*.hpp")
+        FILES_MATCHING PATTERN "*.hpp"
+        PERMISSIONS WORLD_READ)
+
+file(GLOB LIBRL_INC
+        "*.hpp"
+)
+
+add_executable(tests examples/basic/main.cpp)
+target_link_libraries(tests armadillo mlpack)
+

@@ -13,7 +13,7 @@ template<typename TState, typename TAction>
 class Policy {
 public:
     virtual std::unordered_map<TAction, double>
-    get_probabilities(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+    get_probabilities(const librl::approximator::action_value::ActionValueApproximator<TState, TAction>* f,
                       const std::vector<TAction> &available_actions,
                       const TState &at_state) const = 0;
     /**
@@ -24,7 +24,7 @@ public:
      * @param at_state the state of the env.
      * @return The selected action
      */
-    virtual TAction choose_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+    virtual TAction choose_action(const librl::approximator::action_value::ActionValueApproximator<TState, TAction>* f,
                                   const std::vector<TAction> &available_actions,
                                   const TState &at_state) = 0;
     /**
@@ -34,7 +34,7 @@ public:
      * @param at_state the state of the env.
      * @return The selected action
      */
-    virtual TAction predict_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+    virtual TAction predict_action(const librl::approximator::action_value::ActionValueApproximator<TState, TAction>* f,
                                    const std::vector<TAction> &available_actions,
                                    const TState &at_state) const = 0;
 

@@ -23,7 +23,7 @@ namespace librl{ namespace approximator {
 class FunctionApproximator {
     virtual double get_learning_rate() const = 0;
 };
-
+namespace action_value {
 template<typename TState, typename TAction>
 class ActionValueApproximator : public FunctionApproximator {
 public:
@@ -387,7 +387,8 @@ protected:
     std::unordered_map<TState, double> _afterstate;
     std::function<TState(TState, TAction)> state_transition;
 };
-
+}
+namespace state_value{
 template<typename TState>
 class StateValueApproximator : public FunctionApproximator {
 public:
@@ -507,5 +508,6 @@ public:
 
     std::unordered_map<TState, double> _V;
 };
+}
 }}
 #endif /* FUNCTIONAPPROXIMATOR_HPP */

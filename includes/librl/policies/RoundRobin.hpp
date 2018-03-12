@@ -17,7 +17,7 @@ class RoundRobin : public Policy <TState, TAction>{
 public:
 
     virtual std::unordered_map<TAction, double>
-    get_probabilities(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+    get_probabilities(const librl::approximator::action_value::ActionValueApproximator<TState, TAction>* f,
                       const std::vector<TAction> &available_actions,
                       const TState &at_state) const {
         std::unordered_map<TAction, double> probabilities;
@@ -27,7 +27,7 @@ public:
         return probabilities;
     }
 
-    virtual TAction choose_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+    virtual TAction choose_action(const librl::approximator::action_value::ActionValueApproximator<TState, TAction>* f,
                                   const std::vector<TAction> &available_actions,
                                   const TState &at_state) {
         if(action_indices.find(at_state) == action_indices.end()) action_indices[at_state] = 0;
@@ -36,7 +36,7 @@ public:
         return action;
     }
 
-    virtual TAction predict_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+    virtual TAction predict_action(const librl::approximator::action_value::ActionValueApproximator<TState, TAction>* f,
                                   const std::vector<TAction> &available_actions,
                                   const TState &at_state) const {
         int action_index_at_state;

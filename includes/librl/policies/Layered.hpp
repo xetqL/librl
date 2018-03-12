@@ -12,6 +12,7 @@
 #include "EGreedy.hpp"
 #include "Greedy.hpp"
 #include "UCB1.hpp"
+#include "Policy.hpp"
 
 namespace librl { namespace policy {
 
@@ -33,7 +34,7 @@ public:
                                         std::numeric_limits<DurationType>::max()));
     }
 
-    virtual TAction choose_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+    virtual TAction choose_action(const librl::approximator::action_value::ActionValueApproximator<TState, TAction>* f,
                                   const std::vector<TAction> &available_actions,
                                   const TState &at_state) {
         auto policy = layers.front().first;
@@ -48,7 +49,7 @@ public:
         return action;
     }
 
-    virtual TAction predict_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+    virtual TAction predict_action(const librl::approximator::action_value::ActionValueApproximator<TState, TAction>* f,
                                   const std::vector<TAction> &available_actions,
                                   const TState &at_state) const {
         auto policy = layers.front().first;
@@ -57,7 +58,7 @@ public:
 
     void reset() {}
 
-    virtual std::unordered_map<TAction, double> get_probabilities(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+    virtual std::unordered_map<TAction, double> get_probabilities(const librl::approximator::action_value::ActionValueApproximator<TState, TAction>* f,
                                                                   const std::vector<TAction> &available_actions,
                                                                   const TState &at_state) const {
         auto policy = layers.front().first;

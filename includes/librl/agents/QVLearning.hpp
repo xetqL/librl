@@ -14,8 +14,8 @@ public:
     const std::string name = "QVLearning";
 
     QVLearning(librl::policy::Policy<TState, TAction> *pi,
-               librl::approximator::ActionValueApproximator<TState, TAction> *ava,
-               librl::approximator::StateValueApproximator<TState> *sva,
+               librl::approximator::action_value::ActionValueApproximator<TState, TAction> *ava,
+               librl::approximator::state_value::StateValueApproximator<TState> *sva,
                double discount_factor) :
                RLAgent<TState, TAction>(pi, ava, discount_factor), v(sva) {
     }
@@ -46,7 +46,7 @@ protected:
         return reward + this->gamma * this->v->V(next_state);
     }
 
-    librl::approximator::StateValueApproximator<TState> *v;
+    librl::approximator::state_value::StateValueApproximator<TState> *v;
 };
 }}
 #endif // QVLEARNINGAGENT_HPP

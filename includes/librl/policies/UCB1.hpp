@@ -10,7 +10,7 @@ template<typename TState, typename TAction>
 class UCB1 : public Policy<TState, TAction> {
 public:
 
-    virtual TAction choose_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+    virtual TAction choose_action(const librl::approximator::action_value::ActionValueApproximator<TState, TAction>* f,
                                   const std::vector<TAction> &available_actions,
                                   const TState &at_state) {
         auto action = ucb1Exploration(f, available_actions, at_state);
@@ -18,7 +18,7 @@ public:
         return action;
     }
 
-    virtual TAction predict_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+    virtual TAction predict_action(const librl::approximator::action_value::ActionValueApproximator<TState, TAction>* f,
                                   const std::vector<TAction> &available_actions,
                                   const TState &at_state) const {
         auto action = ucb1Exploration(f, available_actions, at_state);
@@ -30,7 +30,7 @@ public:
         this->numberOfTimeAction.clear();
     }
 
-    virtual std::unordered_map<TAction, double> get_probabilities(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+    virtual std::unordered_map<TAction, double> get_probabilities(const librl::approximator::action_value::ActionValueApproximator<TState, TAction>* f,
                                                         const std::vector<TAction> &available_actions,
                                                         const TState &at_state) const {
         const int nb_actions = available_actions.size();
@@ -49,7 +49,7 @@ public:
         return probabilities;
     }
 
-    TAction ucb1Exploration(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+    TAction ucb1Exploration(const librl::approximator::action_value::ActionValueApproximator<TState, TAction>* f,
                             const std::vector<TAction> &available_actions,
                             const TState &at_state) const {
         double max = std::numeric_limits<double>::lowest(), ucbValue;

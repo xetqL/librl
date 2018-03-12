@@ -12,7 +12,7 @@ class SoftRoundRobin : public Policy <TState, TAction>{
     unsigned int action_index = 0;
 public:
     virtual std::unordered_map<TAction, double>
-    get_probabilities(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+    get_probabilities(const librl::approximator::action_value::ActionValueApproximator<TState, TAction>* f,
                       const std::vector<TAction> &available_actions,
                       const TState &at_state) const {
         std::unordered_map<TAction, double> probabilities;
@@ -22,7 +22,7 @@ public:
         return probabilities;
     }
 
-    virtual TAction choose_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+    virtual TAction choose_action(const librl::approximator::action_value::ActionValueApproximator<TState, TAction>* f,
                                   const std::vector<TAction> &available_actions,
                                   const TState &at_state) {
         TAction action = available_actions.at(action_index % available_actions.size());
@@ -30,7 +30,7 @@ public:
         return action;
     }
 
-    virtual TAction predict_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+    virtual TAction predict_action(const librl::approximator::action_value::ActionValueApproximator<TState, TAction>* f,
                                   const std::vector<TAction> &available_actions,
                                   const TState &at_state) const {
         TAction action = available_actions.at(action_index % available_actions.size());

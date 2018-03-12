@@ -14,7 +14,7 @@ public:
     const std::string name = "QLearning";
 
     QLearning(librl::policy::Policy<TState, TAction> *pi,
-              librl::approximator::ActionValueApproximator<TState, TAction> *ava,
+              librl::approximator::action_value::ActionValueApproximator<TState, TAction> *ava,
               double discount_factor) :
               RLAgent<TState, TAction>(pi, ava, discount_factor) {
     }

@@ -25,7 +25,7 @@ public:
         this->temperature = this->init_temperature;
     }
 
-    virtual TAction choose_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+    virtual TAction choose_action(const librl::approximator::action_value::ActionValueApproximator<TState, TAction>* f,
                                   const std::vector<TAction> &available_actions,
                                   const TState &at_state) {
         TAction selectedAction = boltzmannExploration(f, available_actions, at_state, this->temperature);
@@ -33,14 +33,14 @@ public:
         return selectedAction;
     }
 
-    virtual TAction predict_action(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+    virtual TAction predict_action(const librl::approximator::action_value::ActionValueApproximator<TState, TAction>* f,
                                   const std::vector<TAction> &available_actions,
                                   const TState &at_state) {
         TAction selectedAction = boltzmannExploration(f, available_actions, at_state, this->temperature);
         return selectedAction;
     }
 
-    virtual std::unordered_map<TAction, double> get_probabilities(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+    virtual std::unordered_map<TAction, double> get_probabilities(const librl::approximator::action_value::ActionValueApproximator<TState, TAction>* f,
                                                         const std::vector<TAction> &available_actions,
                                                         const TState &at_state) const {
         double pSIGMA = 0;
@@ -71,7 +71,7 @@ protected:
     double temperature;
     double coolingFactor;
 
-    TAction boltzmannExploration(const librl::approximator::ActionValueApproximator<TState, TAction>* f,
+    TAction boltzmannExploration(const librl::approximator::action_value::ActionValueApproximator<TState, TAction>* f,
                                  const std::vector<TAction> &available_actions,
                                  const TState &at_state,
                                  double temperature) {

@@ -27,7 +27,7 @@ public:
      * @param explTechnique Specifiy the function that selects the next Action following a given policy
      */
      RLAgent(librl::policy::Policy<TState, TAction>* pi,
-             librl::approximator::ActionValueApproximator<TState, TAction>* fa,
+             librl::approximator::action_value::ActionValueApproximator<TState, TAction>* fa,
              double discount_factor) :
              q(fa),
              pi(pi),
@@ -87,7 +87,7 @@ protected:
      */
     virtual double get_reinforcement(TState prev_state, TAction action, TState next_state, double reward) const = 0;
 
-    librl::approximator::ActionValueApproximator<TState, TAction>* q;
+    librl::approximator::action_value::ActionValueApproximator<TState, TAction>* q;
     librl::policy::Policy<TState, TAction>* pi;
     double gamma;
 };
